@@ -3,95 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>たこ焼き受注管理システム - 仕様書・ユーザーガイド</title>
+    <title>たこ焼き受注管理システム - 取扱説明書・仕様書</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
-        h1, h2, h3 { color: #d32f2f; }
-        h1 { text-align: center; }
-        h2, h3 { margin-top: 20px; }
-        p { line-height: 1.6; }
-        ul { margin: 10px 0; padding-left: 20px; }
+        /* ===================================================
+        全体デザイン設定
+        =================================================== */
+        body { font-family: sans-serif; line-height: 1.7; color: #333; margin: 0; padding: 0; background: #fdfdfd; }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        
+        /* ヘッダー・ナビゲーション */
+        header { border-bottom: 3px solid #d32f2f; padding-bottom: 20px; margin-bottom: 40px; }
+        h1 { color: #d32f2f; margin: 0 0 10px 0; font-size: 28px; }
+        .subtitle { color: #666; font-size: 16px; margin: 0; }
+        
+        /* 見出しスタイル */
+        h2 { color: #d32f2f; border-left: 5px solid #d32f2f; padding-left: 12px; margin-top: 40px; font-size: 22px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #0d47a1; font-size: 18px; margin-top: 25px; }
+        
+        /* 箇条書き・テーブル */
+        ul, ol { padding-left: 20px; margin-bottom: 20px; }
         li { margin-bottom: 8px; }
-        .screenshot { border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 10px 0; }
-        .example { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 20px 0; }
-        .example h3 { margin-top: 0; }
-        .example img { max-width: 100%; border: 1px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f5f5f5; font-weight: bold; color: #444; }
+        
+        /* ハイライト表現 */
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 14px; border: 1px solid #e0e0e0; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; color: #fff; }
+        .badge-red { background: #d32f2f; }
+        .badge-blue { background: #0288d1; }
+        .badge-green { background: #2e7d32; }
+        .badge-yellow { background: #fbc02d; color: #333; }
+        
+        /* ===================================================
+        画像用モックアップ（CSSによる擬似画面キャプチャ）
+        =================================================== */
+        .image-mockup { background: #f0f4f8; border: 2px dashed #b0bec5; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; position: relative; }
+        .image-mockup::before { content: "📷 画面イメージ"; display: block; font-weight: bold; color: #546e7a; margin-bottom: 15px; font-size: 14px; }
+        .mock-ui { background: white; border: 1px solid #ccc; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); padding: 15px; text-align: left; max-width: 500px; margin: 0 auto; font-size: 13px; }
+        .image-caption { font-size: 13px; color: #666; margin-top: 8px; text-align: center; font-style: italic; }
+
+        /* 印刷時の設定 */
+        @media print {
+            body { background: white; background-color: transparent; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            h2 { page-break-before: always; }
+            .image-mockup { border: 1px solid #aaa; background: none; }
+        }
     </style>
 </head>
 <body>
-    <h1>たこ焼き受注管理システム</h1>
-    <h2>仕様書</h2>
-    <p>このシステムは、たこ焼きの注文を管理するためのWebアプリケーションです。以下に、システムの主な機能と画面構成について説明します。</p>
-    
-    <h3>主な機能</h3>
-    <ul>
-        <li><strong>売上集計ボックス:</strong> 売上や注文数を表示する青いボックス。</li>
-        <li><strong>操作パネル:</strong> 注文の追加、リセット、削除を行うボタンを配置。</li>
-        <li><strong>注文リスト:</strong> 現在の注文をカード形式で表示。</li>
-        <li><strong>時間割テーブル:</strong> 時間帯ごとの注文状況やキャパシティを管理。</li>
-    </ul>
 
-    <h3>画面構成</h3>
-    <p>以下は、システムの画面構成を示すスクリーンショットです。</p>
-    <img src="screenshot_main.png" alt="システムのメイン画面" class="screenshot">
+    <div class="container">
+        <header>
+            <h1>🐙 たこ焼き受注管理システム</h1>
+            <p class="subtitle">システム仕様書 兼 ユーザー操作ガイド (改訂版: 15分刻み・営業時間限定運用対応)</p>
+        </header>
 
-    <h2>ユーザーガイド</h2>
-    <p>このセクションでは、システムの利用方法について説明します。</p>
+        <!-- 目次 -->
+        <section>
+            <h2>目次</h2>
+            <ol>
+                <li><a href="#overview">システム概要</a></li>
+                <li><a href="#user-guide">ユーザー操作ガイド（現場向け）</a></li>
+                <li><a href="#specifications">システム基本仕様書（開発・保守向け）</a></li>
+                <li><a href="#troubleshooting">トラブルシューティング</a></li>
+            </ol>
+        </section>
 
-    <h3>1. 注文の追加</h3>
-    <p>以下の手順で新しい注文を追加できます。</p>
-    <ol>
-        <li>操作パネルの「注文」ボタンをクリックします。</li>
-        <li>表示されたフォームに注文内容を入力します。</li>
-        <li>「確定」ボタンをクリックすると、注文がリストに追加されます。</li>
-    </ol>
-    <div class="example">
-        <h3>動作例</h3>
-        <p>以下は、注文を追加する際の画面例です。</p>
-        <img src="screenshot_order_add.png" alt="注文追加の例" class="screenshot">
+        <!-- 1. システム概要 -->
+        <section id="overview">
+            <h2>1. システム概要</h2>
+            <p>本システムは、店舗におけるたこ焼きの注文（受注）を、焼き手の生産能力（キャパシティ）に合わせて時間枠へ自動的に割り振る<strong>「現場特化型スケジュール管理ツール」</strong>です。</p>
+            <p>ピーク時の注文あふれや焼き遅れを防ぎ、お客様へのスムーズな提供時間を確約することを目的として設計されています。</p>
+        </section>
+
+        <!-- 2. ユーザー操作ガイド -->
+        <section id="user-guide">
+            <h2>2. ユーザー操作ガイド</h2>
+            
+            <h3>① 画面の構成</h3>
+            <p>画面は大きく分けて「最上部の集計バー」「中央の操作パネル」「メインの時間割テーブル」の3つで構成されています。</p>
+            <ul>
+                <li><strong>集計バー:</strong> 本日の総生産可能枠、現在の総受注数、提供済みの数、残りの必要生産数が一目で分かります。</li>
+                <li><strong>時間割テーブル:</strong> <code>11:00</code> から <code>20:00</code> まで、15分ごとに区切られた全37マスの枠が表示されます。</li>
+            </ul>
+
+            <h3>② 新しい注文（受注）を入力する</h3>
+            <ol>
+                <li>画面左上の <span class="badge badge-green">＋ 新規受注入力</span> ボタンを押します。</li>
+                <li>ポップアップ画面（モーダル）が表示されます。</li>
+                <li><strong>数量:</strong> 注文された舟数を入力します（キーボードが日本語のまま全角で「３」と打っても自動で半角に直ります）。</li>
+                <li><strong>味付け・メモ:</strong> 「ソースマヨ」「ねぎ塩・からし抜き」などのカスタム情報を入力します。</li>
+                <li><span class="badge badge-green">OK</span> を押すと、システムが<strong>「今すぐ作れて空いている最も若い時間」</strong>へ注文カードを自動で配置します。</li>
+            </ol>
+
+            <div class="image-mockup">
+                <div class="mock-ui" style="border-top: 5px solid #2e7d32;">
+                    <strong style="font-size: 15px;">🐙 新規受注入力</strong><hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">数量（必須・舟数）</label>
+                    <input type="text" value="3" style="width:90%; padding:5px; margin-bottom:10px;" disabled>
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">味付け・メモ（任意）</label>
+                    <input type="text" value="ソース、マヨネージ、青のり多め" style="width:90%; padding:5px; margin-bottom:15px;" disabled>
+                    <div style="text-align:right;">
+                        <span class="badge" style="background:#e0e0e0; color:#333;">キャンセル</span>
+                        <span class="badge badge-green">OK</span>
+                    </div>
+                </div>
+                <p class="image-caption">図1：新規受注入力画面のイメージ。数量と味付けを同時に打ち込めます。</p>
+            </div>
+
+            <h3>③ 注文のステータスを管理する（提供・変更・削除）</h3>
+            <p>時間割テーブルの右側に並ぶ「黄色いカード」が未提供の注文です。</p>
+            <ul>
+                <li><strong>提供済みにする:</strong> たこ焼きをお客様に渡したら、カード内の <span class="badge" style="background:#eee; color:#333; border:1px solid #ccc; font-size:10px;">提供済にする</span> ボタンを押します。カードが緑色に変化し、その時間枠にデータが<strong>固定ロック</strong>されます。後続の注文が自動前詰めされても、このカードは動きません。</li>
+                <li><strong>変更:</strong> 数量や味付けの変更は <span class="badge" style="background:#eee; color:#333; border:1px solid #ccc; font-size:10px;">変更</span> ボタンからいつでも上書きできます。</li>
+                <li><strong>削除（キャンセル）:</strong> 注文の取り消しは <span class="badge badge-red" style="font-size:10px;">削除</span> を押します。削除されると、後ろに控えていた注文カードが自動的に前に詰まります。</li>
+            </ul>
+
+            <div class="image-mockup">
+                <div class="mock-ui" style="max-width: 350px;">
+                    <div style="background: #fffde7; border: 1px solid #fbc02d; padding: 8px; border-radius:4px;">
+                        <strong>#001</strong>: 3 舟 [<span style="color:#d32f2f;">未提供</span>]
+                        <div style="background:rgba(0,0,0,0.05); font-size:11px; padding:2px; margin:4px 0;">📝 ネギマヨ・ソース</div>
+                        <div style="margin-top:5px; display:flex; gap:3px;">
+                            <button style="font-size:10px;">変更</button>
+                            <button style="font-size:10px; background:#2e7d32; color:white; border:none; border-radius:3px;">提供済にする</button>
+                            <button style="font-size:10px; background:#e53935; color:white; border:none; border-radius:3px;">削除</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="image-caption">図2：時間割内の注文カード。現場でのワンタッチ操作を意識したボタン配置です。</p>
+            </div>
+
+            <h3>④ 各時間枠の「生産可能数（キャパ）」を変更する</h3>
+            <p>仕込みの状況や人員の増減に合わせて、15分間に焼ける最大舟数を枠ごとに変更できます。</p>
+            <ol>
+                <li>変更したい時間枠の「生産可能数」列にある入力欄の数値を書き換えます（例：<code>10</code> → <code>15</code>）。</li>
+                <li>横にある <span class="badge badge-blue">確定</span> ボタンを押します。</li>
+                <li>キャパを増やすと、後ろの時間に溢れていた注文が自動的にその枠へ滑り込みます。</li>
+            </ol>
+
+            <h3>⑤ 環境モードの使い分け（本番とテスト）</h3>
+            <ul>
+                <li><strong>🟢 本番モード（通常運用）:</strong> パソコンやタブレットの内蔵時計と完全に連動します。現在時刻より前の過去の枠には、新規注文が入らないよう安全ガードが働きます。現在の時刻の行が自動で<strong>黄色くハイライト</strong>されます。</li>
+                <li><strong>🟡 テストモード（練習・事前シミュレーション）:</strong> 時計の連動を切り離します。現在時刻の「時」と「分」を手動で変更できるため、お昼のピーク時を想定した注文の事前入力や、新人の打ち込み練習に活用できます。</li>
+            </ul>
+        </section>
+
+        <!-- 3. システム基本仕様書 -->
+        <section id="specifications">
+            <h2>3. システム基本仕様書</h2>
+            
+            <h3>① 動作環境・アーキテクチャ</h3>
+            <table>
+                <tr>
+                    <th>項目</th>
+                    <th>仕様・技術スタック</th>
+                </tr>
+                <tr>
+                    <td>ファイル構成</td>
+                    <td>単一のHTMLファイル（HTML5 / CSS3 / Pure JavaScript）<br>※外部サーバーやデータベース、外部ライブラリ（jQuery等）は一切不要。</td>
+                </tr>
+                <tr>
+                    <td>データ保存先</td>
+                    <td>ブラウザ内蔵ストレージ（<code>Web Storage: localStorage</code>）<br>キー名: <code>takoyaki_master_data_v4</code><br>※ブラウザを閉じたりページをリロードしてもデータは永続保護されます。</td>
+                </tr>
+                <tr>
+                    <td>対応ブラウザ</td>
+                    <td>Google Chrome, Microsoft Edge, Safari 等、モダンブラウザ全般</td>
+                </tr>
+            </table>
+
+            <h3>② 時間割定義スロット</h3>
+            <ul>
+                <li><strong>管理枠:</strong> <code>11:00</code> から <code>20:00</code> までの15分刻み。</li>
+                <li><strong>総スロット数:</strong> <code>37スロット</code>（内部インデックス：<code>0</code> 〜 <code>36</code>）</li>
+                <li><strong>初期キャパシティ:</strong> 全スロット一律でデフォルト <code>10 舟</code>。</li>
+            </ul>
+
+            <h3>③ 自動アサインアルゴリズム（前詰めロジック）</h3>
+            <p>データが変更（追加・編集・削除・キャパ変更）されるたび、内部関数 <code>renderTable()</code> が超高速で以下の再計算を実行し、画面を1ミリ秒で塗り替えます。</p>
+            <ol>
+                <li><strong>既提供枠の固定:</strong> <code>status: 'served'</code>（提供済）の注文データを最優先でスキャンし、指定された時間枠のキャパシティを事前に消費させ、配置を完全固定します。</li>
+                <li><strong>未提供枠の巡回探索:</strong> <code>status: 'active'</code>（未提供）の注文データを、発番された注文番号（ID）の若い順にソートします。</li>
+                <li><strong>現在時刻からの探索:</strong> 現在のスロットインデックスからスタートし、最終スロット（20:00）に向けて「注文数量以上の空きキャパシティがあるか」を順番に探索します。条件に合う枠が見つかり次第アサインし、その枠の空きキャパを減算します。</li>
+                <li><strong>バッファ・あふれ処理:</strong> 万が一、営業時間内のどの枠にも入りきらなかった注文（キャパシティ超過）が発生した場合、データ紛失を防ぐための安全装置として、最終枠である <code>20:00</code> のマスの末尾に一括集約して警告表示します。</li>
+            </ol>
+
+            <h3>④ データ構造（JSONスキーマ）</h3>
+            <p><code>localStorage</code> に保存されるオブジェクトの構造です。</p>
+<pre><code>{
+    "nextOrderNumber": 5,
+    "envMode": "production",
+    "hourlyCapacities": [10, 10, 12, 12, ... 37要素],
+    "allOrders": [
+        {
+            "id": 1,
+            "quantity": 3,
+            "memo": "ソースマヨ",
+            "status": "served",
+            "assignedHour": 0
+        }
+    ]
+}</code></pre>
+        </section>
+
+        <!-- 4. トラブルシューティング -->
+        <section id="troubleshooting">
+            <h2>4. トラブルシューティング</h2>
+            
+            <h3>Q. 「生産残枠を超えて溢れているためロックできません」と怒られる</h3>
+            <p><strong>A.</strong> 最終枠（20:00）に注文が溜まり、キャパシティ（初期値10）を超えている状態で「提供済にする」を押した際の安全装置（エラー）です。20:00枠の「生産可能数」の数字を増やすか、手前の時間に空きを作って注文カードを前方に移動させてからロックをかけてください。</p>
+
+            <h3>Q. 日付が変わったので、前日のデータを真っさらにしたい</h3>
+            <p><strong>A.</strong> 画面右上の <span class="badge" style="background:#757575;">データをすべてリセット</span> ボタンを押してください。確認ダイアログで「OK」を選択すると、注文番号が<code>1</code>にリセットされ、すべてのマスが初期状態（キャパ10）に戻ります。</p>
+
+            <h3>Q. タブレット端末がフリーズしたり、ブラウザを誤って閉じてしまった</h3>
+            <p><strong>A.</strong> システムは1秒未満の単位で常に自動保存（オートセーブ）を行っています。再度同じブラウザでHTMLファイルを開き直せば、フリーズ直前の状態がそのまま完全に復元されます。</p>
+        </section>
     </div>
 
-    <h3>2. 注文の削除</h3>
-    <p>以下の手順で注文を削除できます。</p>
-    <ol>
-        <li>注文リスト内の各カードに表示される「削除」ボタンをクリックします。</li>
-        <li>該当の注文がリストから削除されます。</li>
-    </ol>
-    <div class="example">
-        <h3>動作例</h3>
-        <p>以下は、注文を削除する際の画面例です。</p>
-        <img src="screenshot_order_delete.png" alt="注文削除の例" class="screenshot">
-    </div>
-
-    <h3>3. 注文のリセット</h3>
-    <p>以下の手順で注文をリセットできます。</p>
-    <ol>
-        <li>操作パネルの「リセット」ボタンをクリックします。</li>
-        <li>すべての注文が削除され、初期状態に戻ります。</li>
-    </ol>
-    <div class="example">
-        <h3>動作例</h3>
-        <p>以下は、注文をリセットする際の画面例です。</p>
-        <img src="screenshot_order_reset.png" alt="注文リセットの例" class="screenshot">
-    </div>
-
-    <h3>4. 時間割テーブルの利用</h3>
-    <p>以下の手順で時間割テーブルを利用できます。</p>
-    <ol>
-        <li>時間割テーブル内のキャパシティ入力欄を編集します。</li>
-        <li>入力値を変更すると、キャパシティが更新されます。</li>
-    </ol>
-    <div class="example">
-        <h3>動作例</h3>
-        <p>以下は、時間割テーブルを利用する際の画面例です。</p>
-        <img src="screenshot_table_edit.png" alt="時間割テーブル編集の例" class="screenshot">
-    </div>
-
-    <h2>注意事項</h2>
-    <ul>
-        <li>入力内容に不備がある場合、注文が追加されないことがあります。</li>
-        <li>削除操作は取り消せませんので、慎重に操作してください。</li>
-        <li>キャパシティの変更は即時反映されます。</li>
-    </ul>
 </body>
 </html>
