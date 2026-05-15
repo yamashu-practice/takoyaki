@@ -6,17 +6,14 @@
     <title>たこ焼き受注管理システム</title>
     <style>
         /* ===================================================
-           画面のデザイン（CSS）の設定
-           =================================================== */
+        画面のデザイン（CSS）の設定
+        =================================================== */
         body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
         h1 { color: #d32f2f; text-align: center; }
-        
         /* 上部の操作パネル（ボタンや時計の並び） */
         .controls { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-        
         /* 最上部の青い売上集計ボックス */
         .summary-box { background: #e3f2fd; border: 1px solid #90caf9; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 30px; font-size: 18px; font-weight: bold; color: #0d47a1; }
-        
         /* 時間割テーブル（表）のスタイル */
         table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
@@ -24,7 +21,6 @@
         .time-col { width: 80px; font-weight: bold; text-align: center; vertical-align: middle; }
         .capacity-col { width: 150px; text-align: center; vertical-align: middle; }
         .capacity-input { width: 60px; text-align: center; font-size: 16px; padding: 4px; }
-        
         /* ボタン各種のカラー設定 */
         .confirm-btn { background: #0288d1; color: white; border: none; padding: 4px 8px; font-size: 12px; border-radius: 4px; cursor: pointer; margin-left: 5px; }
         .confirm-btn:hover { background: #01579b; }
@@ -34,7 +30,6 @@
         .reset-btn:hover { background: #424242; }
         .delete-btn { background: #e53935; color: white; border: none; border-radius: 4px; }
         .delete-btn:hover { background: #b71c1c; }
-        
         /* 黄色い注文カードのスタイル */
         .order-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
         .order-card { background: #fffde7; border: 1px solid #fbc02d; padding: 6px 10px; border-radius: 4px; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); min-width: 140px; }
@@ -44,15 +39,12 @@
         .order-memo { background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 3px; font-size: 11px; margin-top: 3px; color: #555; word-break: break-all; }
         .order-actions { margin-top: 5px; display: flex; gap: 5px; }
         .order-actions button { font-size: 11px; cursor: pointer; padding: 2px 6px; }
-        
         /* 現在の時刻の行を黄色くハイライト */
         .current-time-info { font-weight: bold; color: #333; display: flex; align-items: center; gap: 10px; }
         .current-row { background-color: #fff9c4 !important; }
-        
         /* 環境切り替えスイッチ（本番・テスト） */
         .env-toggle { background: #eceff1; padding: 6px 12px; border-radius: 20px; border: 1px solid #b0bec5; font-size: 14px; display: flex; gap: 10px; align-items: center; }
         .env-toggle label { cursor: pointer; display: flex; align-items: center; gap: 4px; }
-
         /* 入力用ポップアップ（モーダル窓）のデザイン */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 320px; border-top: 5px solid #2e7d32; }
@@ -69,7 +61,6 @@
     </style>
 </head>
 <body>
-
     <h1>🐙 たこ焼き受注管理システム</h1>
 
     <!-- リアルタイム売上集計エリア -->
@@ -89,7 +80,14 @@
                 <label><input type="radio" name="env-mode" value="test" onchange="switchEnvMode('test')"> 🟡 テスト（手動入力）</label>
             </div>
             <div>
-                現在時刻: <input type="number" id="mock-hour" min="0" max="23" value="10" onchange="updateCurrentHour()"> 時
+                現在時刻: 
+                <input type="number" id="mock-hour" min="11" max="20" value="11" onchange="updateCurrentHour()" style="width:50px;"> 時
+                <select id="mock-minute" onchange="updateCurrentHour()">
+                    <option value="0">00</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="45">45</option>
+                </select> 分
             </div>
         </div>
         <button class="reset-btn" onclick="resetAllData()">データをすべてリセット</button>
@@ -105,7 +103,7 @@
             </tr>
         </thead>
         <tbody id="table-body">
-            <!-- ここにJavaScriptで24時間分の行が作られます -->
+            <!-- ここにJavaScriptで15分刻みの行が作られます -->
         </tbody>
     </table>
 
@@ -131,40 +129,70 @@
     </div>
 
     <!-- ===================================================
-         アプリケーション動作用スクリプト（JavaScript）
-         =================================================== */ -->
+    アプリケーション動作用スクリプト（JavaScript）
+    =================================================== -->
     <script>
         // --- 1. グローバル変数（システム全体で共有するデータ） ---
-        let currentHour = 10;        // アプリが認識している「現在の時間（0〜23）」
-        let nextOrderNumber = 1;     // 次に発番する注文の連番（1, 2, 3...）
-        let envMode = 'production';   // 動作モード（'production'＝本番、'test'＝テスト環境）
-        
-        // 24時間分（0時〜23時）の生産可能数を覚える配列（初期値はすべて10舟）
-        let hourlyCapacities = Array.from({ length: 24 }, () => 10);
-        
-        // ★重要★ すべての注文データを一元管理する唯一の「マスターリスト」
-        // データの二重化やインデックスのズレによるバグを構造的に防ぎます
-        let allOrders = [];
+        let nextOrderNumber = 1; // 次に発番する注文の連番
+        let envMode = 'production'; // 動作モード（'production'＝本番、'test'＝テスト）
 
-        // ブラウザに自動保存をかける時の引き出しのパスワード（保存キー）
+        // 11:00から20:00までの15分刻みの設定
+        const START_HOUR = 11;
+        const END_HOUR = 20;
+        const SLOT_INTERVAL = 15; // 15分おき
+        const TOTAL_SLOTS = ((END_HOUR - START_HOUR) * 60 / SLOT_INTERVAL) + 1; // 37枠
+
+        // スロット数分の生産可能数を覚える配列（初期値はすべて10舟）
+        let hourlyCapacities = Array.from({ length: TOTAL_SLOTS }, () => 10);
+        // すべての注文データを一元管理する「マスターリスト」
+        let allOrders = [];
+        // ブラウザに自動保存をかける時の保存キー
         const STORAGE_KEY = 'takoyaki_master_data_v4';
 
         /**
-         * 日本語キーボードのまま入った「全角数字」を「半角数字」に自動変換する便利関数
-         */
+        * インデックスから「〇:〇」の文字列を作成する関数
+        */
+        function slotToTimeString(slotIndex) {
+            const totalMinutes = START_HOUR * 60 + (slotIndex * SLOT_INTERVAL);
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            return `${h}:${String(m).padStart(2, '0')}`;
+        }
+
+        /**
+        * 現在の時刻（時・分）から対応するスロットインデックス（0〜36）を返す関数
+        */
+        function getCurrentSlotIndex() {
+            if (envMode === 'production') {
+                const now = new Date();
+                const h = now.getHours();
+                const m = now.getMinutes();
+                
+                if (h < START_HOUR) return 0; // 11時前は最初の枠
+                if (h > END_HOUR || (h === END_HOUR && m > 0)) return TOTAL_SLOTS - 1; // 20時以降は最後の枠
+                
+                const diffMinutes = (h - START_HOUR) * 60 + m;
+                return Math.floor(diffMinutes / SLOT_INTERVAL);
+            } else {
+                // テスト環境用の手動入力からインデックスを計算
+                const h = parseInt(document.getElementById('mock-hour').value) || START_HOUR;
+                const m = parseInt(document.getElementById('mock-minute').value) || 0;
+                const diffMinutes = (h - START_HOUR) * 60 + m;
+                return Math.min(TOTAL_SLOTS - 1, Math.max(0, Math.floor(diffMinutes / SLOT_INTERVAL)));
+            }
+        }
+
+        /**
+        * 全角数字を半角数字に自動変換する関数
+        */
         function convertZenToHan(str) {
             return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
         }
 
         // --- 2. データの自動保存（オートセーブ）と読み込み ---
-        
-        /**
-         * 現在のアプリの状態（設定、カウンター、全ての注文リスト）をブラウザのメモリに書き込む
-         */
         function saveToStorage() {
             const dataToSave = {
                 nextOrderNumber: nextOrderNumber,
-                currentHour: currentHour,
                 envMode: envMode,
                 hourlyCapacities: hourlyCapacities,
                 allOrders: allOrders
@@ -172,69 +200,46 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
         }
 
-        /**
-         * ページを開いた時、前回保存されたデータがブラウザにあれば自動で復元する
-         */
         function loadFromStorage() {
             const savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 const parsed = JSON.parse(savedData);
                 nextOrderNumber = parsed.nextOrderNumber;
-                currentHour = parsed.currentHour;
                 envMode = parsed.envMode || 'production';
-                hourlyCapacities = parsed.hourlyCapacities || Array.from({ length: 24 }, () => 10);
+                hourlyCapacities = parsed.hourlyCapacities || Array.from({ length: TOTAL_SLOTS }, () => 10);
                 allOrders = parsed.allOrders || [];
-                return true; // 復元完了
+                return true;
             }
-            return false; // 初めて開いたので保存データなし
+            return false;
         }
 
-        /**
-         * アプリケーションを「完全な初期状態（データなし）」にリセットする設定
-         */
         function initDefaultData() {
             nextOrderNumber = 1;
-            hourlyCapacities = Array.from({ length: 24 }, () => 10);
+            hourlyCapacities = Array.from({ length: TOTAL_SLOTS }, () => 10);
             allOrders = [];
             envMode = 'production';
-            syncActualTime(); // 初期の時刻を本物の時間にする
-        }
-
-        /**
-         * お使いのパソコン・スマホの「本物の現在の時間（○時）」をシステムに反映する
-         */
-        function syncActualTime() {
-            if (envMode === 'production') {
-                currentHour = new Date().getHours(); // 0〜23時の数値を自動取得
-            }
         }
 
         // --- 3. システムの起動・時間自動監視の制御 ---
-        
-        /**
-         * ページが読み込まれた瞬間に一番最初に1回だけ動く、アプリの起動スイッチ
-         */
         function initApp() {
-            // 保存データがあれば読み込み、なければ初期設定を作る
             if (!loadFromStorage()) {
                 initDefaultData();
             }
-
-            // ラジオボタンのチェック状態を、保存されていたモードに合わせる
             const radios = document.getElementsByName('env-mode');
             radios.forEach(r => { if (r.value === envMode) r.checked = true; });
-
-            // 選択された環境（本番・テスト）に応じて画面を整える
-            updateEnvUI();
             
-            // 【時計の自動監視】1分（60000ミリ秒）ごとに本物の時間をチェックする
+            updateEnvUI();
+
+            // 1分ごとにチェックし、15分のスロットが変わったら画面を再計算して更新
+            let lastSlot = getCurrentSlotIndex();
             setInterval(() => {
                 if (envMode === 'production') {
-                    const oldHour = currentHour;
-                    syncActualTime();
-                    // もし12時から13時になるなど「時」が変わったら、画面をパッと再計算して塗り替える
-                    if (oldHour !== currentHour) {
-                        document.getElementById('mock-hour').value = currentHour;
+                    const currentSlot = getCurrentSlotIndex();
+                    if (lastSlot !== currentSlot) {
+                        lastSlot = currentSlot;
+                        const now = new Date();
+                        document.getElementById('mock-hour').value = now.getHours();
+                        document.getElementById('mock-minute').value = Math.floor(now.getMinutes() / SLOT_INTERVAL) * SLOT_INTERVAL;
                         saveToStorage();
                         renderTable();
                     }
@@ -242,35 +247,33 @@
             }, 60000);
         }
 
-        /**
-         * 本番モードなら時間入力を「ロック」、テストモードなら「ロック解除」するUI制御
-         */
         function updateEnvUI() {
             const hourInput = document.getElementById('mock-hour');
+            const minInput = document.getElementById('mock-minute');
+            
             if (envMode === 'production') {
-                syncActualTime(); // 本物の時間を取得
-                hourInput.disabled = true; // 手動入力を禁止（グレーアウト）
+                const now = new Date();
+                hourInput.value = now.getHours();
+                minInput.value = Math.floor(now.getMinutes() / SLOT_INTERVAL) * SLOT_INTERVAL;
+                hourInput.disabled = true;
+                minInput.disabled = true;
                 hourInput.style.backgroundColor = '#e0e0e0';
+                minInput.style.backgroundColor = '#e0e0e0';
             } else {
-                hourInput.disabled = false; // テストなら手動入力を許可
+                hourInput.disabled = false;
+                minInput.disabled = false;
                 hourInput.style.backgroundColor = '#fff';
+                minInput.style.backgroundColor = '#fff';
             }
-            hourInput.value = currentHour;
-            renderTable(); // テーブルを描画
+            renderTable();
         }
 
-        /**
-         * ラジオボタンで環境（本番⇔テスト）が切り替わったときに動く処理
-         */
         function switchEnvMode(mode) {
             envMode = mode;
             updateEnvUI();
             saveToStorage();
         }
 
-        /**
-         * グレーの「データをすべてリセット」ボタンが押されたときの処理
-         */
         function resetAllData() {
             if (confirm("今日のデータをすべて削除してリセットします。本当によろしいですか？")) {
                 initDefaultData();
@@ -279,108 +282,93 @@
             }
         }
 
-        // --- 4. ★最重要★ 自動配置アサイン計算 ＆ 画面の描き出し ---
-        
-        /**
-         * データに変化があった瞬間に走り、自動アサインを再計算して表を秒速で塗り替える心臓部の関数
-         */
+        // --- 4. 自動配置アサイン計算 ＆ 画面の描き出し ---
         function renderTable() {
-            // --- ステップA: 各時間の「空き容量」を計算する ---
-            const remainingCapacity = [...hourlyCapacities]; // 生産可能数の配列をコピー
+            const currentSlot = getCurrentSlotIndex();
+            const remainingCapacity = [...hourlyCapacities];
 
-            // 「提供済（statusがserved）」の注文を最優先でスキャンし、その時間のキャパをあらかじめ消費（場所を固定ロック）させる
+            // 「提供済」の注文を最優先でスキャンし、キャパをあらかじめ消費
             allOrders.forEach(order => {
                 if (order.status === 'served') {
-                    const h = order.assignedHour;
-                    remainingCapacity[h] = Math.max(0, remainingCapacity[h] - order.quantity);
+                    const s = order.assignedHour;
+                    if (s < TOTAL_SLOTS) {
+                        remainingCapacity[s] = Math.max(0, remainingCapacity[s] - order.quantity);
+                    }
                 }
             });
 
-            // --- ステップB: 0時〜23時の「24個の部屋（配列）」を綺麗に用意する ---
-            const displaySlots = Array.from({ length: 24 }, () => []);
-
-            // --- ステップC: 「未提供」の注文を若い順に前詰め自動配置していく ---
-            // 注文データを受注連番（ID）順に綺麗に並び替えて順番を完全保証する
+            const displaySlots = Array.from({ length: TOTAL_SLOTS }, () => []);
             const sortedOrders = [...allOrders].sort((a, b) => a.id - b.id);
 
+            // 「未提供」の注文を若い順に前詰め自動配置していく
             sortedOrders.forEach(order => {
                 if (order.status === 'served') {
-                    // 提供済みの注文は、すでにロックされている時間にそのまま格納する
-                    displaySlots[order.assignedHour].push(order);
+                    if (order.assignedHour < TOTAL_SLOTS) {
+                        displaySlots[order.assignedHour].push(order);
+                    }
                 } else if (order.status === 'active') {
-                    // 未提供の注文は、ルールに従って空き時間を自動的に探索
                     let assigned = false;
-                    // ルール：現在時刻(currentHour)からスタートして、23時まで空きを探す
-                    for (let h = currentHour; h < 24; h++) {
-                        if (remainingCapacity[h] >= order.quantity) {
-                            order.assignedHour = h; // 注文データ自身にアサインされた時間を記憶させる
-                            displaySlots[h].push(order);
-                            remainingCapacity[h] -= order.quantity; // 消費した分キャパを引く
+                    // 現在のスロットからスタートして最終スロットまで探索
+                    for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
+                        if (remainingCapacity[s] >= order.quantity) {
+                            order.assignedHour = s; 
+                            displaySlots[s].push(order);
+                            remainingCapacity[s] -= order.quantity;
                             assigned = true;
-                            break; // 配置完了したのでこの注文のループを抜ける
+                            break; 
                         }
                     }
-                    // キャパオーバーでどこにも入り切らなかった注文は、安全に23時の部屋の末尾に集約表示する
+                    // キャパオーバーで入り切らなかった注文は最終スロットに集約表示
                     if (!assigned) {
-                        order.assignedHour = 23;
-                        displaySlots[23].push(order); 
+                        order.assignedHour = TOTAL_SLOTS - 1;
+                        displaySlots[TOTAL_SLOTS - 1].push(order);
                     }
                 }
             });
 
-            // --- ステップD: 計算したデータをもとに、HTML（表の見た目）を組み立てる ---
-            let totalCap = hourlyCapacities.reduce((sum, v) => sum + v, 0); // 本日の総生産可能数
-            let totalOrd = 0; // 本日の総受注数
-            let totalSrv = 0; // 提供完了数
-
+            let totalCap = hourlyCapacities.reduce((sum, v) => sum + v, 0);
+            let totalOrd = 0;
+            let totalSrv = 0;
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = ''; // 古いテーブルの中身を一旦すべてクリアする
+            tbody.innerHTML = ''; 
 
-            // 0時から23時まで、1行ずつループ処理でHTML要素を作っていく
-            for (let h = 0; h < 24; h++) {
+            // 37枠分のループ処理でHTML要素を作成
+            for (let s = 0; s < TOTAL_SLOTS; s++) {
                 const tr = document.createElement('tr');
-                if (h === currentHour) tr.className = 'current-row'; // 現在時刻の行なら黄色くハイライト
+                if (s === currentSlot) tr.className = 'current-row';
 
-                // 📁 左側：時間を表示する列
                 const tdTime = document.createElement('td');
                 tdTime.className = 'time-col';
-                tdTime.textContent = `${h}:00`;
+                tdTime.textContent = slotToTimeString(s);
                 tr.appendChild(tdTime);
 
-                // 📁 中央：生産可能数を入力・確定する列
                 const tdCapacity = document.createElement('td');
                 tdCapacity.className = 'capacity-col';
                 tdCapacity.innerHTML = `
-                    <input type="text" id="input-cap-${h}" class="capacity-input" value="${hourlyCapacities[h]}">
-                    <button class="confirm-btn" onclick="confirmCapacity(${h})">確定</button>
+                    <input type="text" id="input-cap-${s}" class="capacity-input" value="${hourlyCapacities[s]}">
+                    <button class="confirm-btn" onclick="confirmCapacity(${s})">確定</button>
                 `;
                 tr.appendChild(tdCapacity);
 
-                // 📁 右側：受注カードを並べる列
                 const tdOrders = document.createElement('td');
                 const ul = document.createElement('ul');
                 ul.className = 'order-list';
 
-                // displaySlots[h] に入っている計算済みの注文をカードにして並べる
-                displaySlots[h].forEach(order => {
+                displaySlots[s].forEach(order => {
                     totalOrd += order.quantity;
                     if (order.status === 'served') totalSrv += order.quantity;
-
                     const li = document.createElement('li');
                     const isServed = (order.status === 'served');
                     li.className = `order-card ${isServed ? 'served' : ''}`;
-                    
-                    const formattedId = String(order.id).padStart(3, '0'); // #001のような3桁表記に
+                    const formattedId = String(order.id).padStart(3, '0');
                     const memoHtml = order.memo ? `<div class="order-memo">📝 ${order.memo}</div>` : '';
-
-                    // 💡 ポイント: すべてのボタンに「注文固有のID (order.id)」を直接紐付ける。
-                    // これにより、順番がどれだけ入れ替わっても誤動作やデータの見失いが100%起きなくなります。
+                    
                     li.innerHTML = `
                         <div><strong>#${formattedId}</strong>: ${order.quantity} 舟 [${isServed ? '提供済' : '未提供'}]</div>
                         ${memoHtml}
                         <div class="order-actions">
                             <button onclick="openEditModal(${order.id})">変更</button>
-                            ${isServed 
+                            ${isServed
                                 ? `<button onclick="toggleServed(${order.id}, 'active')">未済に戻す</button>` 
                                 : `<button onclick="toggleServed(${order.id}, 'served')">提供済にする</button>`
                             }
@@ -389,13 +377,11 @@
                     `;
                     ul.appendChild(li);
                 });
-
                 tdOrders.appendChild(ul);
                 tr.appendChild(tdOrders);
                 tbody.appendChild(tr);
             }
 
-            // 青い売上集計ボックスの数字をリアルタイム更新
             document.getElementById('total-capacity').textContent = totalCap;
             document.getElementById('total-orders').textContent = totalOrd;
             document.getElementById('total-served').textContent = totalSrv;
@@ -403,158 +389,107 @@
         }
 
         // --- 5. オリジナルカスタム入力パネル（モーダル窓）の制御 ---
-
-        /**
-         * 緑の「＋新規受注入力」ボタンを押したときに窓を立ち上げる処理
-         */
         function openOrderModal() {
             document.getElementById('modal-title').textContent = "🐙 新規受注入力";
-            document.getElementById('edit-order-id').value = ""; // IDを空にする（新規の証拠）
+            document.getElementById('edit-order-id').value = ""; 
             document.getElementById('modal-qty').value = "";
             document.getElementById('modal-memo').value = "";
-            document.getElementById('order-modal').style.display = 'flex'; // 画面に表示
-            document.getElementById('modal-qty').focus(); // 数量の入力欄に自動でカーソルを合わせる
-        }
-
-        /**
-         * 注文カード内の「変更」ボタンを押したときに、今のデータを載せて窓を立ち上げる処理
-         */
-        function openEditModal(orderId) {
-            // マスターデータから該当の注文を1件探し出す
-            const order = allOrders.find(o => o.id === orderId);
-            if (!order) return;
-
-            document.getElementById('modal-title').textContent = `✏️ 注文 #${String(order.id).padStart(3, '0')} の変更`;
-            document.getElementById('edit-order-id').value = order.id; // 変更対象のIDを隠し窓に記録
-            document.getElementById('modal-qty').value = order.quantity;
-            document.getElementById('modal-memo').value = order.memo || "";
-            document.getElementById('order-modal').style.display = 'flex'; // 画面に表示
+            document.getElementById('order-modal').style.display = 'flex';
             document.getElementById('modal-qty').focus();
         }
 
-        /**
-         * ダイアログの「キャンセル」を押したときに窓を閉じる処理
-         */
+        function openEditModal(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+            document.getElementById('modal-title').textContent = `✏ 注文 #${String(order.id).padStart(3, '0')} の変更`;
+            document.getElementById('edit-order-id').value = order.id;
+            document.getElementById('modal-qty').value = order.quantity;
+            document.getElementById('modal-memo').value = order.memo || "";
+            document.getElementById('order-modal').style.display = 'flex';
+            document.getElementById('modal-qty').focus();
+        }
+
         function closeOrderModal() {
             document.getElementById('order-modal').style.display = 'none';
         }
 
-        /**
-         * ダイアログの「OK」ボタンを押したときに、新規登録またはデータ上書きを行う共通処理
-         */
         function submitOrderModal() {
             const qtyInputEl = document.getElementById('modal-qty');
             const memoInputEl = document.getElementById('modal-memo');
             const editId = document.getElementById('edit-order-id').value;
 
-            // 全角で入った数字を半角に自動クリーニング
             let cleanQty = convertZenToHan(qtyInputEl.value.trim());
             const qty = parseInt(cleanQty);
-
-            // 正しい数字が入っているか厳重にチェック（バリデーション）
             if (isNaN(qty) || qty <= 0) {
                 alert("数量には1以上の正しい数値を入力してください。");
                 qtyInputEl.focus();
                 return;
             }
-
             const memo = memoInputEl.value.trim();
-
             if (editId === "") {
-                // 【新規受注の場合】: マスターリストの末尾に新しく注文オブジェクトを追加する
                 allOrders.push({
                     id: nextOrderNumber++,
                     quantity: qty,
                     memo: memo,
-                    status: 'active',   // 'active' ＝ 未提供 / 'served' ＝ 提供完了
-                    assignedHour: currentHour // 暫定の初期配置時間
+                    status: 'active',
+                    assignedHour: getCurrentSlotIndex() 
                 });
             } else {
-                // 【内容変更の場合】: 記憶しておいたIDをもとにマスターリストのデータを直接上書きする
                 const order = allOrders.find(o => o.id === parseInt(editId));
                 if (order) {
                     order.quantity = qty;
                     order.memo = memo;
                 }
             }
-
-            closeOrderModal(); // 入力窓を閉じる
-            saveToStorage();   // オートセーブを実行
-            renderTable();     // 画面を自動再アサインして更新
+            closeOrderModal();
+            saveToStorage();
+            renderTable();
         }
 
         // --- 6. 注文のステータス書き換え・削除のアクション処理 ---
-
-        /**
-         * 注文カード内の赤い「削除」ボタンが押されたときの処理
-         */
         function deleteOrder(orderId) {
             const formattedId = String(orderId).padStart(3, '0');
             if (!confirm(`注文 #${formattedId} を完全に削除（キャンセル）してもよろしいですか？`)) {
-                return; // キャンセルなら中断
+                return;
             }
-            
-            // 安全な手法：マスターリストから該当IDの注文だけを「フィルター除去」して上書きする
             allOrders = allOrders.filter(o => o.id !== orderId);
-            
-            saveToStorage(); // 保存
-            renderTable();   // 後続の注文が自動的に前詰めされます
+            saveToStorage();
+            renderTable();
         }
 
-        /**
-         * 「提供済にする」または「未済に戻す」の切り替え処理
-         */
         function toggleServed(orderId, newStatus) {
             const order = allOrders.find(o => o.id === orderId);
             if (order) {
-                // 【安全ロック装置】
-                // キャパが足りずに23時に溢れて仮配置されている「保留状態の未提供注文」は、
-                // 枠が空くまで提供済ロックをかけられないようにガードします
-                if (newStatus === 'served' && order.assignedHour === 23) {
-                    const fixedSum23 = allOrders.filter(o => o.status === 'served' && o.assignedHour === 23).reduce((sum, o) => sum + o.quantity, 0);
-                    const remaining23 = hourlyCapacities[23] - fixedSum23;
-                    
-                    if (order.quantity > remaining23) {
-                        alert("【警告】この注文は生産残枠を超えて溢れている（保留状態の）ため、まだ提供済みにロックできません。生産可能数を増やすか、手前の時間に空きを作ってください。");
+                const lastSlotIdx = TOTAL_SLOTS - 1;
+                if (newStatus === 'served' && order.assignedHour === lastSlotIdx) {
+                    const fixedSum20 = allOrders.filter(o => o.status === 'served' && o.assignedHour === lastSlotIdx).reduce((sum, o) => sum + o.quantity, 0);
+                    const remaining20 = hourlyCapacities[lastSlotIdx] - fixedSum20;
+                    if (order.quantity > remaining20) {
+                        alert("【警告】この注文は生産残枠を超えて溢れているため、まだ提供済みにロックできません。生産可能数を増やすか、手前の時間に空きを作ってください。");
                         return;
                     }
                 }
-
-                // 注文のステータス属性（status）を直接書き換えるだけ！
-                order.status = newStatus; 
+                order.status = newStatus;
                 saveToStorage();
-                renderTable(); // これだけで、提供済は固定され、未提供は勝手に綺麗な前詰めに再計算されます
+                renderTable();
             }
         }
 
-        /**
-         * 生産可能数の数値を打ち込んで「確定」ボタンを押したときの処理
-         */
-        function confirmCapacity(hour) {
-            const inputElement = document.getElementById(`input-cap-${hour}`);
+        function confirmCapacity(slotIndex) {
+            const inputElement = document.getElementById(`input-cap-${slotIndex}`);
             let cleanValue = convertZenToHan(inputElement.value.trim());
             const newCapacity = parseInt(cleanValue) || 0;
-            
-            hourlyCapacities[hour] = newCapacity; // スケジュール配列のキャパ数を上書き
-            saveToStorage();                      // 保存
-            renderTable();                        // 変更されたキャパに合わせてすべての注文カードが前詰め・繰り下げ連動
+            hourlyCapacities[slotIndex] = newCapacity;
+            saveToStorage();
+            renderTable();
         }
 
-        /**
-         * テスト環境（手動入力）の時、現在時刻の数字を変更したときの処理
-         */
         function updateCurrentHour() {
             if (envMode === 'test') {
-                const val = parseInt(document.getElementById('mock-hour').value);
-                if (val >= 0 && val <= 23) {
-                    currentHour = val;
-                    saveToStorage();
-                    renderTable();
-                }
+                renderTable();
             }
         }
 
-        // ページが完全に読み込まれた瞬間に、一番最初の起動処理(initApp)をキックする
         window.onload = initApp;
     </script>
 </body>
