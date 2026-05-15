@@ -874,19 +874,48 @@
                 return;
             }
             const memo = memoInputEl.value.trim();
-            
+                    
             if (editId === "") {
-                // 【新規受注の登録ルート】: マスターリストの末尾に、新しい注文オブジェクトを作成して追加
+            // ==========================================
+            // 【新規受注の登録ルート】大量受注の自動分割・繰り下げ配置
+            // ==========================================
+            let remainingQty = qty; // 処理していない残りの注文数
+            let startSlot = getCurrentSlotIndex(); // 現在時刻に対応する時間枠
+            
+            // 営業終了枠（TOTAL_SLOTS - 1）を超えない範囲で、空きキャパを探して分割投入
+            for (let s = startSlot; s < TOTAL_SLOTS && remainingQty > 0; s++) {
+                // その枠に既にアサインされている「未提供」と「提供済」の合計受注数を集計
+                const currentOrdersSum = allOrders.filter(o => o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+                // その枠の残り空きキャパを計算（初期値10から現在の受注数を引く）
+                const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
+                
+                // 空きキャパがある枠を見つけたら、そこに入れるだけ投入する
+                if (slotRemainingCap > 0) {
+                // この枠に割り当てる数量を決定（残りキャパ、または注文残数のどちらか小さい方）
+                const takeQty = Math.min(slotRemainingCap, remainingQty);
+                
+                // 分割された注文データとしてマスターリストに追加
                 allOrders.push({
-                    id: nextOrderNumber++,         // カウンターの数字を割り当てた後、連番を1増やす
-                    quantity: qty,                 // 入力された数量
-                    memo: memo,                    // 入力されたメモ
-                    status: 'active',              // 'active' ＝ 未提供（初期状態） / 'served' ＝ 提供完了
-                    assignedHour: getCurrentSlotIndex() // 暫定の初期配置として、現在の時間スロットを登録
+                    id: nextOrderNumber++, // 注文番号は1つずつ連番で発番
+                    quantity: takeQty,
+                    memo: remainingQty === qty ? memo : memo + ` (分割数: ${takeQty}舟)`, // 2つ目以降の分割カードに自動注記
+                    status: 'active',
+                    assignedHour: s // 決定した時間枠に直接アサイン
                 });
+                
+                remainingQty -= takeQty; // 残りの注文数を減らす
+                }
+            }
+            
+            // 営業終了（20:00枠）までキャパを全て埋めても、まだ注文が余っている場合（本当のキャパオーバー）
+            if (remainingQty > 0) {
+                alert(`【生産上限エラー】当日の焼き枠上限を全て使い切りました。\n入り切らなかった「残り ${remainingQty} 舟」の注文は登録されません。`);
+            }
+
             } else {
-                // 【内容変更の上書きルート】: 記憶しておいた隠しIDをもとに、マスターリストの該当データを書き換え
-                const order = allOrders.find(o => o.id === parseInt(editId));
+            // 【内容変更の上書きルート】: 記憶しておいた隠しIDをもとに、マスターリストの該当データを書き換え
+            const order = allOrders.find(o => o.id === parseInt(editId));
+
                 if (order) {
                     order.quantity = qty;
                     order.memo = memo;
