@@ -950,27 +950,44 @@
         function toggleServed(orderId, newStatus) {
             const order = allOrders.find(o => o.id === orderId);
             if (order) {
-                const lastSlotIdx = TOTAL_SLOTS - 1; // 最終枠（36番目：20:00スロット）のインデックス番号
+                const formattedId = String(orderId).padStart(3, '0');
+                
+                // === 【追加】提供済み・未済に戻す際のアラートダイアログ（確認窓） ===
+                if (newStatus === 'served') {
+                    if (!confirm(`注文 #${formattedId} （${order.quantity}舟） を「提供済」にしてもよろしいですか？`)) {
+                        return; // キャンセルされた場合は処理を中断
+                    }
+                } else if (newStatus === 'active') {
+                    if (!confirm(`注文 #${formattedId} を「未済（未提供）」に戻してもよろしいですか？`)) {
+                        return; // キャンセルされた場合は処理を中断
+                    }
+                }
+
+                const lastSlotIdx = TOTAL_SLOTS - 1; // 最終枠(36番目:20:00スロット) のインデックス番号
                 
                 // 【安全ロックガード装置】
                 // キャパが満杯で最終枠に一時的に溢れている注文は、焼き枠に空きが作られるまで提供完了ロックをかけられないように厳重ガード
                 if (newStatus === 'served' && order.assignedHour === lastSlotIdx) {
                     // 最終枠で既にロック確定している提供済み注文の総数を集計
-                    const fixedSum20 = allOrders.filter(o => o.status === 'served' && o.assignedHour === lastSlotIdx).reduce((sum, o) => sum + o.quantity, 0);
+                    const fixedSum20 = allOrders.filter(o =>
+                        o.status === 'served' && o.assignedHour === lastSlotIdx
+                    ).reduce((sum, o) => sum + o.quantity, 0);
+                    
                     const remaining20 = hourlyCapacities[lastSlotIdx] - fixedSum20; // 最終枠の残り空き上限
                     
                     if (order.quantity > remaining20) {
-                        alert("【警告】この注文は生産残枠を超えて溢れている（保留状態の）ため、まだ提供済みにロックできません。生産可能数を増やすか、手前の時間に空きを作ってください。");
-                        return; // 処理をガードして中断
+                        alert("【警告】 この注文は生産残枠を超えて溢れている（保留状態の）ため、まだ提供済みにロックできません。生産可能数を増やすか、手前の時間に空きを作ってください。");
+                        return; //処理をガードして中断
                     }
                 }
                 
-                // 注文データのステータス属性（status）を書き換え
+                // 注文データのステータス属性 (status) を書き換え
                 order.status = newStatus;
                 saveToStorage(); // 保存
-                renderTable();   // 提供済は指定枠に固定され、残りの未提供分は自動で前詰めされます
+                renderTable(); // 提供済は指定枠に固定され、残りの未提供分は自動で前詰めされます
             }
         }
+
 
         /**
          * 生産可能数のテキスト入力欄に数値を打ち込んで「確定」ボタンを押したときのキャパ変更処理
