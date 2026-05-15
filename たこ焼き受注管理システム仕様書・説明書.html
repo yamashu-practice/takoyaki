@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>たこ焼き受注管理システム - 仕様書・ユーザーガイド</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
+        h1, h2, h3 { color: #d32f2f; }
+        h1 { text-align: center; }
+        h2, h3 { margin-top: 20px; }
+        p { line-height: 1.6; }
+        ul { margin: 10px 0; padding-left: 20px; }
+        li { margin-bottom: 8px; }
+        .screenshot { border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 10px 0; }
+        .example { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 20px 0; }
+        .example h3 { margin-top: 0; }
+        .example img { max-width: 100%; border: 1px solid #ddd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>たこ焼き受注管理システム</h1>
+    <h2>仕様書</h2>
+    <p>このシステムは、たこ焼きの注文を管理するためのWebアプリケーションです。以下に、システムの主な機能と画面構成について説明します。</p>
+    
+    <h3>主な機能</h3>
+    <ul>
+        <li><strong>売上集計ボックス:</strong> 売上や注文数を表示する青いボックス。</li>
+        <li><strong>操作パネル:</strong> 注文の追加、リセット、削除を行うボタンを配置。</li>
+        <li><strong>注文リスト:</strong> 現在の注文をカード形式で表示。</li>
+        <li><strong>時間割テーブル:</strong> 時間帯ごとの注文状況やキャパシティを管理。</li>
+    </ul>
+
+    <h3>画面構成</h3>
+    <p>以下は、システムの画面構成を示すスクリーンショットです。</p>
+    <img src="screenshot_main.png" alt="システムのメイン画面" class="screenshot">
+
+    <h2>ユーザーガイド</h2>
+    <p>このセクションでは、システムの利用方法について説明します。</p>
+
+    <h3>1. 注文の追加</h3>
+    <p>以下の手順で新しい注文を追加できます。</p>
+    <ol>
+        <li>操作パネルの「注文」ボタンをクリックします。</li>
+        <li>表示されたフォームに注文内容を入力します。</li>
+        <li>「確定」ボタンをクリックすると、注文がリストに追加されます。</li>
+    </ol>
+    <div class="example">
+        <h3>動作例</h3>
+        <p>以下は、注文を追加する際の画面例です。</p>
+        <img src="screenshot_order_add.png" alt="注文追加の例" class="screenshot">
+    </div>
+
+    <h3>2. 注文の削除</h3>
+    <p>以下の手順で注文を削除できます。</p>
+    <ol>
+        <li>注文リスト内の各カードに表示される「削除」ボタンをクリックします。</li>
+        <li>該当の注文がリストから削除されます。</li>
+    </ol>
+    <div class="example">
+        <h3>動作例</h3>
+        <p>以下は、注文を削除する際の画面例です。</p>
+        <img src="screenshot_order_delete.png" alt="注文削除の例" class="screenshot">
+    </div>
+
+    <h3>3. 注文のリセット</h3>
+    <p>以下の手順で注文をリセットできます。</p>
+    <ol>
+        <li>操作パネルの「リセット」ボタンをクリックします。</li>
+        <li>すべての注文が削除され、初期状態に戻ります。</li>
+    </ol>
+    <div class="example">
+        <h3>動作例</h3>
+        <p>以下は、注文をリセットする際の画面例です。</p>
+        <img src="screenshot_order_reset.png" alt="注文リセットの例" class="screenshot">
+    </div>
+
+    <h3>4. 時間割テーブルの利用</h3>
+    <p>以下の手順で時間割テーブルを利用できます。</p>
+    <ol>
+        <li>時間割テーブル内のキャパシティ入力欄を編集します。</li>
+        <li>入力値を変更すると、キャパシティが更新されます。</li>
+    </ol>
+    <div class="example">
+        <h3>動作例</h3>
+        <p>以下は、時間割テーブルを利用する際の画面例です。</p>
+        <img src="screenshot_table_edit.png" alt="時間割テーブル編集の例" class="screenshot">
+    </div>
+
+    <h2>注意事項</h2>
+    <ul>
+        <li>入力内容に不備がある場合、注文が追加されないことがあります。</li>
+        <li>削除操作は取り消せませんので、慎重に操作してください。</li>
+        <li>キャパシティの変更は即時反映されます。</li>
+    </ul>
+</body>
+</html>
