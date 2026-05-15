@@ -16,48 +16,84 @@
         h1 { 
             color: #d32f2f; 
             text-align: center; 
+            margin-top: 10px;
+            margin-bottom: 15px;
         }
-        /* 上部の操作パネル（ボタン、環境モード、時計の横並びエリア） */
-        .controls { 
-            background: #fff; 
-            padding: 15px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            margin-bottom: 20px; 
-            display: flex; 
-            gap: 15px; 
-            align-items: center; 
-            flex-wrap: wrap; 
+
+        /* ---------------------------------------------------
+        【新仕様】画面上部へのエリア完全固定（追従レイアウト）
+        --------------------------------------------------- */
+        .fixed-header-area {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f9f9f9; /* このグレーの背景色を下まで伸ばします */
+            z-index: 100;
+            padding-top: 5px;
+            padding-bottom: 10px; /* 【変更】下の隙間を完全に塗りつぶすためにパディングを確保 */
+            display: flex;
+            flex-direction: column;
         }
+
         /* 最上部に配置された青色の売上・受注リアルタイム集計ボックス */
         .summary-box { 
             background: #e3f2fd; 
             border: 1px solid #90caf9; 
             padding: 15px; 
             border-radius: 8px; 
-            margin-bottom: 20px; 
+            margin-bottom: 0;    /* 固定エリア内をコンパクトに収めるため下の余白をゼロに変更 */
             display: flex; 
             gap: 30px; 
             font-size: 18px; 
             font-weight: bold; 
             color: #0d47a1; 
         }
-        /* メインの時間割スケジュールテーブル（表） */
+        /* 操作パネル（ボタン、環境モード、時計の横並びエリア） */
+        .controls { 
+            background: #fff; 
+            padding: 15px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            margin-top: 10px;    /* 集計ボックスとの適切な隙間を確保 */
+            margin-bottom: 0;    /* 固定エリア内をコンパクトに収めるため下の余白をゼロに変更 */
+            display: flex; 
+            gap: 15px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+
+        /* ---------------------------------------------------
+        メインの時間割スケジュールテーブル（表）
+        --------------------------------------------------- */
         table { 
             width: 100%; 
-            border-collapse: collapse; 
+            border-collapse: separate; /* ヘッダーを固定した際の枠線の崩れや重複を防ぐために変更 */
+            border-spacing: 0;         /* セル同士の隙間をゼロにして通常の表と同じ見た目にする */
             background: #fff; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            position: relative;        /* ヘッダー固定の配置基準にする */
         }
         th, td { 
-            border: 1px solid #ddd; 
+            border-bottom: 1px solid #ddd; /* 線の重複を避けるため下線と右線のみを基本とする */
+            border-right: 1px solid #ddd;
             padding: 10px; 
             text-align: left; 
             vertical-align: top; 
         }
+        /* 各行の左端のセルにだけ左側の枠線を追加 */
+        th:first-child, td:first-child {
+            border-left: 1px solid #ddd;
+        }
+        /* 赤いタイトル行（テーブルヘッダー）の固定設定 */
         th { 
             background: #d32f2f; 
             color: white; 
+            position: sticky;
+            /* 固定エリア（集計バー＋パネルの合計高）の直下に吸い付くように位置を上へ調整 */
+            top: 147px;                    
+            z-index: 10;
+            border-top: 1px solid #ddd;
         }
         /* 左側：時刻を表示する列（幅固定・中央寄せ） */
         .time-col { 
@@ -78,6 +114,7 @@
             font-size: 16px; 
             padding: 4px; 
         }
+
         /* ---------------------------------------------------
         各種操作ボタンのカラーバリエーション
         --------------------------------------------------- */
@@ -110,13 +147,13 @@
         .manual-btn {
             background: #0d47a1;
             color: white;
-            text-decoration: none;
+            border: none;
             padding: 10px 20px;
             font-size: 16px;
             border-radius: 4px;
             font-weight: bold;
-            display: inline-block;
-            margin-left: auto; /* 右側に寄せるための設定 */
+            cursor: pointer;
+            margin-left: auto; /* ボタンを右端に寄せる設定 */
         }
         .manual-btn:hover { background: #0a377d; }
         
@@ -289,39 +326,42 @@
 <body>
     <h1>🐙 たこ焼き受注管理システム</h1>
 
-    <!-- リアルタイム売上・受注数の集計エリア（画面最上部） -->
-    <div class="summary-box">
-        <div>本日の方針：<span id="total-capacity">0</span> 舟 生産可能</div>
-        <div>総受注数：<span id="total-orders">0</span> 舟</div>
-        <div>提供完了：<span id="total-served">0</span> 舟（残り <span id="total-remaining">0</span> 舟）</div>
-    </div>
-
-    <!-- コントロールパネル（注文追加・時間変更・マニュアル・リセット） -->
-    <div class="controls">
-        <button class="order-btn" onclick="openOrderModal()">＋ 新規受注入力</button>
-        <div class="current-time-info">
-            <div class="env-toggle">
-                <strong>環境モード:</strong>
-                <label><input type="radio" name="env-mode" value="production" onchange="switchEnvMode('production')" checked> 🟢 本番（時計連動）</label>
-                <label><input type="radio" name="env-mode" value="test" onchange="switchEnvMode('test')"> 🟡 テスト（手動入力）</label>
-            </div>
-            <div>
-                現在時刻: 
-                <input type="number" id="mock-hour" min="11" max="20" value="11" onchange="updateCurrentHour()" style="width:50px;"> 時
-                <select id="mock-minute" onchange="updateCurrentHour()">
-                    <option value="0">00</option>
-                    <option value="15">15</option>
-                    <option value="30">30</option>
-                    <option value="45">45</option>
-                </select> 分
-            </div>
+    <!-- 【画面上部固定コンテナ】スクロールしてもこのエリアごと最上部に残り続けます -->
+    <div class="fixed-header-area">
+        <!-- リアルタイム売上・受注数の集計エリア -->
+        <div class="summary-box">
+            <div>本日の方針：<span id="total-capacity">0</span> 舟 生産可能</div>
+            <div>総受注数：<span id="total-orders">0</span> 舟</div>
+            <div>提供完了：<span id="total-served">0</span> 舟（残り <span id="total-remaining">0</span> 舟）</div>
         </div>
-        
-        <!-- 【マニュアルリンクボタン】同じフォルダの manual.html を別タブで開きます -->
-        <button type="button" onclick="window.open('manual.html', '_blank')" class="manual-btn">📖 取扱説明書を開く</button>
-        
-        <button class="reset-btn" onclick="resetAllData()">データをすべてリセット</button>
-    </div>
+
+        <!-- コントロールパネル -->
+        <div class="controls">
+            <button class="order-btn" onclick="openOrderModal()">＋ 新規受注入力</button>
+            <div class="current-time-info">
+                <div class="env-toggle">
+                    <strong>環境モード:</strong>
+                    <label><input type="radio" name="env-mode" value="production" onchange="switchEnvMode('production')" checked> 🟢 本番（時計連動）</label>
+                    <label><input type="radio" name="env-mode" value="test" onchange="switchEnvMode('test')"> 🟡 テスト（手動入力）</label>
+                </div>
+                <div>
+                    現在時刻: 
+                    <input type="number" id="mock-hour" min="11" max="20" value="11" onchange="updateCurrentHour()" style="width:50px;"> 時
+                    <select id="mock-minute" onchange="updateCurrentHour()">
+                        <option value="0">00</option>
+                        <option value="15">15</option>
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                    </select> 分
+                </div>
+            </div>
+            
+            <!-- 【改善版マニュアルボタン】セキュリティ制限を回避するため、JSのwindow.openを使用してマニュアルを開きます -->
+            <button type="button" onclick="window.open('manual.html', '_blank')" class="manual-btn">📖 取扱説明書を開く</button>
+            
+            <button class="reset-btn" onclick="resetAllData()">データをすべてリセット</button>
+        </div>
+    </div> <!-- 固定コンテナの終了 -->
 
     <!-- メインのスケジュール表 -->
     <table>
@@ -333,15 +373,14 @@
             </tr>
         </thead>
         <tbody id="table-body">
-            <!-- ここにJavaScriptの計算処理によって15分刻み（全37枠）の行が自動挿入されます -->
+            <!-- ここにJavaScriptの計算処理によって15分刻みの行が自動挿入されます -->
         </tbody>
     </table>
 
-    <!-- 数量とメモを1画面で同時に打ち込めるカスタムポップアップ窓（モーダル） -->
+    <!-- 数量とメモを同時に打ち込めるカスタムポップアップ窓（モーダル） -->
     <div id="order-modal" class="modal-overlay">
         <div class="modal-box">
             <h3 id="modal-title">🐙 新規受注入力</h3>
-            <!-- 変更（編集）時に「どの注文データを直しているか」を一時的に記憶させておくための隠し入力欄 -->
             <input type="hidden" id="edit-order-id" value="">
             <div class="modal-form-group">
                 <label for="modal-qty">数量（必須・舟数）</label>
@@ -376,8 +415,11 @@
         // 【枠数の計算】 (20時 - 11時) × 60分 ÷ 15分 ＋ 最終枠（20:00ちょうど） ＝ 合計 37枠
         const TOTAL_SLOTS = ((END_HOUR - START_HOUR) * 60 / SLOT_INTERVAL) + 1;
 
+        // 1枠の生産上限数は、初期値としてすべての枠に10舟をセット（後から変更可能）
+        const DEFAULT_CAPACITY_PER_SLOT = 10;
+
         // 各時間枠ごとの生産上限数を覚える配列（初期値はすべての枠に10舟をセット）
-        let hourlyCapacities = Array.from({ length: TOTAL_SLOTS }, () => 10);
+        let hourlyCapacities = Array.from({ length: TOTAL_SLOTS }, () => DEFAULT_CAPACITY_PER_SLOT);
         
         // 店舗に入ったすべての注文データを一元管理する「マスターリスト配列」
         let allOrders = [];
@@ -461,7 +503,7 @@
                 const parsed = JSON.parse(savedData);
                 nextOrderNumber = parsed.nextOrderNumber;
                 envMode = parsed.envMode || 'production';
-                // 過去バージョン等との互換性のために、配列数が新しい仕様（37枠）と一致しているかチェックして復元
+                // 配列数が新しい仕様（37枠）と一致しているかチェックして復元
                 hourlyCapacities = parsed.hourlyCapacities || Array.from({ length: TOTAL_SLOTS }, () => 10);
                 allOrders = parsed.allOrders || [];
                 return true;
@@ -565,11 +607,11 @@
         }
 
         // ===================================================
-        // 4. 【システムの心臓部】自動配置アサイン計算 ＆ 画面描き出し
+        // 4. 自動配置アサイン計算 ＆ 画面描き出し
         // ===================================================
         
         /**
-         * データに何らかの変化（追加・変更・削除・提供）が起きた瞬間に走り、自動アサインを秒速で再計算して表を塗り替える超重要関数
+         * データに何らかの変化（追加・変更・削除・提供）が起きた瞬間に走り、自動アサインを秒速で再計算して表を塗り替える重要関数
          */
         function renderTable() {
             const currentSlot = getCurrentSlotIndex(); // 現在位置の枠番号（ここより前の枠に未提供注文は入れない）
@@ -587,10 +629,10 @@
                 }
             });
 
-            // 画面表示用に、37枠分の空っぽの「部屋（配列）」を綺麗に用意
+            // 画面表示用に、37枠分の空っぽの「部屋（配列）」を用意
             const displaySlots = Array.from({ length: TOTAL_SLOTS }, () => []);
             
-            // データの先祖返りや表示ズレを防ぐため、すべての注文を受注した順番（IDの若い順）に完全ソート（並び替え）する
+            // データの先祖返りや表示ズレを防ぐため、すべての注文を受注した順番（IDの若い順）に完全ソート
             const sortedOrders = [...allOrders].sort((a, b) => a.id - b.id);
 
             // --- ステップB: 「未提供」の注文を、若い順に前詰め自動配置（自動アサイン）していく ---
@@ -616,7 +658,7 @@
                     }
                     
                     // 【キャパオーバーの救避装置】営業時間内のどこにも枠が足りず入り切らなかった注文は、
-                    // データが画面から消えてしまうのを防ぐため、安全に最終マス（20:00）の末尾へ集約表示して見える化する
+                    // データ紛失を防ぐため、安全に最終マス（20:00）の末尾へ集約表示して見える化する
                     if (!assigned) {
                         order.assignedHour = TOTAL_SLOTS - 1;
                         displaySlots[TOTAL_SLOTS - 1].push(order);
@@ -669,8 +711,7 @@
                     const formattedId = String(order.id).padStart(3, '0'); // 注文番号1番を「#001」のようなきれいな3桁表記に整える
                     const memoHtml = order.memo ? `<div class="order-memo">📝 ${order.memo}</div>` : ''; // メモがあればアイコン付きで表示
                     
-                    // 【超重要ポイント】「変更」「提供」「削除」のすべてのボタンに、注文固有の背番号「order.id」を直接紐付けて埋め込む。
-                    // これにより、画面上でどれだけカードの順番が激しく入れ替わっても、誤動作やデータの見失いが100%発生しない強固な設計にしています。
+                    // 「変更」「提供」「削除」のすべてのボタンに注文固有のIDを直接紐付けて埋め込む
                     li.innerHTML = `
                         <div><strong>#${formattedId}</strong>: ${order.quantity} 舟 [${isServed ? '提供済' : '未提供'}]</div>
                         ${memoHtml}
@@ -710,19 +751,19 @@
             document.getElementById('modal-qty').value = "";
             document.getElementById('modal-memo').value = "";
             document.getElementById('order-modal').style.display = 'flex'; // 画面中央にポップアップを表示
-            document.getElementById('modal-qty').focus(); // 現場の作業スピード向上のため、数量入力欄に自動でカーソルを合わせる
+            document.getElementById('modal-qty').focus(); // 数量入力欄に自動でカーソルを合わせる
         }
 
         /**
          * 注文カード内の「変更」ボタンが押されたときに、現在のデータを載せた状態でポップアップを立ち上げる関数
          */
         function openEditModal(orderId) {
-            // マスターデータ内から、クリックされた注文データの背番号（ID）と一致するものを1件探し出す
+            // マスターデータ内からクリックされた注文データのIDと一致するものを1件探し出す
             const order = allOrders.find(o => o.id === orderId);
             if (!order) return;
             
             document.getElementById('modal-title').textContent = `✏ 注文 #${String(order.id).padStart(3, '0')} の変更`;
-            document.getElementById('edit-order-id').value = order.id; // どのIDの注文を今から上書き修正するかを隠し枠に記憶させる
+            document.getElementById('edit-order-id').value = order.id; // どのIDの注文を修正するか記憶させる
             document.getElementById('modal-qty').value = order.quantity;
             document.getElementById('modal-memo').value = order.memo || "";
             document.getElementById('order-modal').style.display = 'flex'; // 画面中央に表示
@@ -744,11 +785,11 @@
             const memoInputEl = document.getElementById('modal-memo');
             const editId = document.getElementById('edit-order-id').value;
 
-            // 全角数字（例：３）で入力されてもエラーにせず、半角数字（3）に自動クリーニングして前後の余白を削る
+            // 全角数字で入力されても半角数字に自動クリーニングして前後の余白を削る
             let cleanQty = convertZenToHan(qtyInputEl.value.trim());
             const qty = parseInt(cleanQty);
             
-            // 【厳重なバリデーションチェック】文字が入っていたり、0以下、空欄の場合は警告を出して処理を中断する
+            // 【厳重なバリデーションチェック】文字、0以下、空欄の場合は警告を出して処理を中断する
             if (isNaN(qty) || qty <= 0) {
                 alert("数量には1以上の正しい数値を入力してください。");
                 qtyInputEl.focus();
@@ -757,16 +798,16 @@
             const memo = memoInputEl.value.trim();
             
             if (editId === "") {
-                // 【新規受注の登録ルート】: マスターリストの末尾に、新しい注文オブジェクトを作成して追加する
+                // 【新規受注の登録ルート】: マスターリストの末尾に、新しい注文オブジェクトを作成して追加
                 allOrders.push({
-                    id: nextOrderNumber++,         // カウンターの数字を割り当てた後、次のために数値を1増やす
+                    id: nextOrderNumber++,         // カウンターの数字を割り当てた後、連番を1増やす
                     quantity: qty,                 // 入力された数量
                     memo: memo,                    // 入力されたメモ
                     status: 'active',              // 'active' ＝ 未提供（初期状態） / 'served' ＝ 提供完了
                     assignedHour: getCurrentSlotIndex() // 暫定の初期配置として、現在の時間スロットを登録
                 });
             } else {
-                // 【内容変更の上書きルート】: 記憶しておいた隠しIDをもとに、マスターリストの該当データを直接書き換える
+                // 【内容変更の上書きルート】: 記憶しておいた隠しIDをもとに、マスターリストの該当データを書き換え
                 const order = allOrders.find(o => o.id === parseInt(editId));
                 if (order) {
                     order.quantity = qty;
@@ -783,17 +824,17 @@
         // ===================================================
         
         /**
-         * 注文カード内の赤い「削除」ボタンが押されたときのお客さんキャンセルデータ削除処理
+         * 注文カード内の赤い「削除」ボタンが押されたときのデータ削除処理
          */
         function deleteOrder(orderId) {
             const formattedId = String(orderId).padStart(3, '0');
             if (!confirm(`注文 #${formattedId} を完全に削除（キャンセル）してもよろしいですか？`)) {
-                return; // キャンセルがクリックされた場合は処理を何もしないで中断
+                return; // キャンセルされた場合は中断
             }
-            // 【安全で確実なデータ除外】マスターリストから該当IDの注文データ「だけ」をフィルター除去して上書きする
+            // マスターリストから該当IDの注文データ「だけ」をフィルター除去して上書き
             allOrders = allOrders.filter(o => o.id !== orderId);
             saveToStorage(); // 保存
-            renderTable();   // 再描画（これにより、後ろに控えていた未提供の注文が秒速で自動前詰めされます）
+            renderTable();   // 再描画（これにより、後ろの未提供の注文が秒速で自動前詰めされます）
         }
 
         /**
@@ -805,12 +846,11 @@
                 const lastSlotIdx = TOTAL_SLOTS - 1; // 最終枠（36番目：20:00スロット）のインデックス番号
                 
                 // 【安全ロックガード装置】
-                // キャパが満杯でどこにも入り切れず、最終の20:00枠に一時的に溢れて溜まっている「あふれ保留状態の未提供注文」は、
-                // 焼き枠に空きが作られる（生産キャパが増やされる）まで、誤って提供完了ロックをかけられないように厳重ガードする
+                // キャパが満杯で最終枠に一時的に溢れている注文は、焼き枠に空きが作られるまで提供完了ロックをかけられないように厳重ガード
                 if (newStatus === 'served' && order.assignedHour === lastSlotIdx) {
                     // 最終枠で既にロック確定している提供済み注文の総数を集計
                     const fixedSum20 = allOrders.filter(o => o.status === 'served' && o.assignedHour === lastSlotIdx).reduce((sum, o) => sum + o.quantity, 0);
-                    const remaining20 = hourlyCapacities[lastSlotIdx] - fixedSum20; // 最終枠の純粋な残り空き上限
+                    const remaining20 = hourlyCapacities[lastSlotIdx] - fixedSum20; // 最終枠の残り空き上限
                     
                     if (order.quantity > remaining20) {
                         alert("【警告】この注文は生産残枠を超えて溢れている（保留状態の）ため、まだ提供済みにロックできません。生産可能数を増やすか、手前の時間に空きを作ってください。");
@@ -818,25 +858,25 @@
                     }
                 }
                 
-                // 注文データのステータス属性（status）を直接上書き書き換えする
+                // 注文データのステータス属性（status）を書き換え
                 order.status = newStatus;
                 saveToStorage(); // 保存
-                renderTable();   // これだけで、提供済は指定枠に固定され、残りの未提供分は自動で綺麗な前詰めスケジュールに再計算されます
+                renderTable();   // 提供済は指定枠に固定され、残りの未提供分は自動で前詰めされます
             }
         }
 
         /**
-         * 生産可能数のテキスト入力欄に数値を打ち込んで、青い「確定」ボタンを押したときのキャパ変更処理
+         * 生産可能数のテキスト入力欄に数値を打ち込んで「確定」ボタンを押したときのキャパ変更処理
          */
         function confirmCapacity(slotIndex) {
             const inputElement = document.getElementById(`input-cap-${slotIndex}`);
             // 入力ミス（全角数字）を半角に自動変換
             let cleanValue = convertZenToHan(inputElement.value.trim());
-            const newCapacity = parseInt(cleanValue) || 0; // 空欄や不正文字列の場合は0として処理
+            const newCapacity = parseInt(cleanValue) || 0; // 不正文字列の場合は0として処理
             
             hourlyCapacities[slotIndex] = newCapacity; // スケジュール配列内のキャパ数を最新データに上書き
             saveToStorage(); // 保存
-            renderTable();   // 変更された新しいキャパ枠に合わせて、すべての未提供カードが連動して自動前詰め・繰り下げされます
+            renderTable();   // 新しいキャパ枠に合わせて、すべての未提供カードが自動前詰め・繰り下げされます
         }
 
         /**
@@ -848,7 +888,7 @@
             }
         }
 
-        // ページ全体とブラウザの読み込みが完全に完了した最初の瞬間に、起動スイッチ（initApp）をキックする
+        // ページ全体とブラウザの読み込みが完全に完了した瞬間に起動スイッチをオンにする
         window.onload = initApp;
     </script>
 </body>
