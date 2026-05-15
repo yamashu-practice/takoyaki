@@ -5,401 +5,424 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>たこ焼き受注管理システム</title>
     <style>
-        /* ===================================================
-        画面全体の見栄え（CSSベースデザイン）
-        =================================================== */
-        body { 
-            font-family: sans-serif; 
-            margin: 20px; 
-            background: #f9f9f9; 
+        /* ========================================================
+           1. 全体・基本設定（文字サイズを20pxに底上げ・崩れ防止）
+           ======================================================== */
+        body {
+          font-family: sans-serif;
+          margin: 20px;
+          background: #f9f9f9;
+          font-size: 20px; /* 基本文字を大きく */
         }
-        h1 { 
-            color: #d32f2f; 
-            text-align: center; 
-            margin-top: 10px;
-            margin-bottom: 15px;
+      
+        h1 {
+          color: #d32f2f;
+          text-align: center;
+          margin-top: 10px;
+          margin-bottom: 15px;
+          font-size: 32px; /* タイトルを巨大化 */
         }
-
-        /* ---------------------------------------------------
-        【新仕様】画面上部へのエリア完全固定（追従レイアウト）
-        --------------------------------------------------- */
+      
+        /* ========================================================
+           2. 【新仕様】画面上部へのエリア完全固定（追従レイアウト）
+           ======================================================== */
+        /* 集計ボックス、コントロールパネル、そしてテーブルタイトル（th）までを
+           一体化して画面最上部に完全固定するためのコンテナ */
         .fixed-header-area {
-            position: sticky;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #f9f9f9; /* このグレーの背景色を下まで伸ばします */
-            z-index: 100;
-            padding-top: 5px;
-            padding-bottom: 10px; /* 【変更】下の隙間を完全に塗りつぶすためにパディングを確保 */
-            display: flex;
-            flex-direction: column;
+          position: sticky;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: #f9f9f9;
+          z-index: 100;
+          padding-top: 5px;
+          padding-bottom: 0; /* thとの隙間を無くすため0に変更 */
+          display: flex;
+          flex-direction: column;
         }
-
+      
         /* 最上部に配置された青色の売上・受注リアルタイム集計ボックス */
-        .summary-box { 
-            background: #e3f2fd; 
-            border: 1px solid #90caf9; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 0;    /* 固定エリア内をコンパクトに収めるため下の余白をゼロに変更 */
-            display: flex; 
-            gap: 30px; 
-            font-size: 18px; 
-            font-weight: bold; 
-            color: #0d47a1; 
+        .summary-box {
+          background: #e3f2fd;
+          border: 1px solid #90caf9;
+          padding: 15px 20px; /* 余白を広げて視認性向上 */
+          border-radius: 8px;
+          margin-bottom: 0;
+          display: flex;
+          gap: 30px;
+          font-size: 22px; /* 数字と文字を大きく */
+          font-weight: bold;
+          color: #0d47a1;
         }
+      
         /* 操作パネル（ボタン、環境モード、時計の横並びエリア） */
-        .controls { 
-            background: #fff; 
-            padding: 15px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            margin-top: 10px;    /* 集計ボックスとの適切な隙間を確保 */
-            margin-bottom: 0;    /* 固定エリア内をコンパクトに収めるため下の余白をゼロに変更 */
-            display: flex; 
-            gap: 15px; 
-            align-items: center; 
-            flex-wrap: wrap; 
+        .controls {
+          background: #fff;
+          padding: 15px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          margin-top: 10px;
+          margin-bottom: 10px; /* 下に配置されるthとの間にクッションを確保 */
+          display: flex;
+          gap: 15px;
+          align-items: center;
+          flex-wrap: wrap;
         }
-
-        /* ---------------------------------------------------
-        メインの時間割スケジュールテーブル（表）
-        --------------------------------------------------- */
-        table { 
-            width: 100%; 
-            border-collapse: separate; /* ヘッダーを固定した際の枠線の崩れや重複を防ぐために変更 */
-            border-spacing: 0;         /* セル同士の隙間をゼロにして通常の表と同じ見た目にする */
-            background: #fff; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            position: relative;        /* ヘッダー固定の配置基準にする */
+      
+        /* ========================================================
+           3. メインの時間割スケジュールテーブル（表）
+           ======================================================== */
+        table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          background: #fff;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          position: relative;
         }
-        th, td { 
-            border-bottom: 1px solid #ddd; /* 線の重複を避けるため下線と右線のみを基本とする */
-            border-right: 1px solid #ddd;
-            padding: 10px; 
-            text-align: left; 
-            vertical-align: top; 
+      
+        th, td {
+          border-bottom: 1px solid #ddd;
+          border-right: 1px solid #ddd;
+          padding: 15px 12px; /* セル内の余白を広げて見やすく */
+          text-align: left;
+          vertical-align: top;
         }
-        /* 各行の左端のセルにだけ左側の枠線を追加 */
+      
         th:first-child, td:first-child {
-            border-left: 1px solid #ddd;
+          border-left: 1px solid #ddd;
         }
+      
         /* 赤いタイトル行（テーブルヘッダー）の固定設定 */
-        th { 
-            background: #d32f2f; 
-            color: white; 
-            position: sticky;
-            /* 固定エリア（集計バー＋パネルの合計高）の直下に吸い付くように位置を上へ調整 */
-            top: 147px;                    
-            z-index: 10;
-            border-top: 1px solid #ddd;
+        th {
+          background: #d32f2f;
+          color: white;
+          font-size: 20px; /* ヘッダーの文字を大きく */
+          
+          /* 【超重要・崩れ防止策】固定値(147px)での追従を廃止。
+             文字サイズ変更によってヘッダー全体の高さがどれだけ伸びても、
+             .fixed-header-area の直下に「自動で隙間なく吸着」させます */
+          position: sticky;
+          top: 0; 
+          z-index: 90;
+          border-top: 1px solid #ddd;
         }
-        /* 左側：時刻を表示する列（幅固定・中央寄せ） */
-        .time-col { 
-            width: 80px; 
-            font-weight: bold; 
-            text-align: center; 
-            vertical-align: middle; 
+      
+        /* 左側: 時刻を表示する列（幅固定・中央寄せ） */
+        .time-col {
+          width: 110px; /* 文字拡大に合わせて列幅を拡張 */
+          font-weight: bold;
+          font-size: 24px; /* 時間枠の数字を一番大きくハッキリと */
+          text-align: center;
+          vertical-align: middle;
+          background: #f1f3f5;
         }
-        /* 中央：生産キャパを設定・確認する列 */
-        .capacity-col { 
-            width: 150px; 
-            text-align: center; 
-            vertical-align: middle; 
+      
+        /* 中央: 生産キャパを設定・確認する列 */
+        .capacity-col {
+          width: 180px; /* ボタン配置にゆとりを持たせる */
+          text-align: center;
+          vertical-align: middle;
         }
-        .capacity-input { 
-            width: 60px; 
-            text-align: center; 
-            font-size: 16px; 
-            padding: 4px; 
+      
+        .capacity-input {
+          width: 65px;
+          height: 42px; /* 入力しやすいよう高さを確保 */
+          text-align: center;
+          font-size: 22px; /* 入力数値を大きく */
+          padding: 4px;
         }
-
-        /* ---------------------------------------------------
-        各種操作ボタンのカラーバリエーション
-        --------------------------------------------------- */
+      
+        /* ========================================================
+           4. 各種操作ボタンのカラーバリエーション・巨大化
+           ======================================================== */
         /* 各マスの「確定」ボタン */
-        .confirm-btn { 
-            background: #0288d1; 
-            color: white; 
-            border: none; 
-            padding: 4px 8px; 
-            font-size: 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            margin-left: 5px; 
+        .confirm-btn {
+          background: #0288d1;
+          color: white;
+          border: none;
+          padding: 8px 14px; /* 押しやすく拡大 */
+          font-size: 18px;
+          border-radius: 4px;
+          cursor: pointer;
+          margin-left: 5px;
+          min-height: 42px;
         }
         .confirm-btn:hover { background: #01579b; }
-        
-        /* 左上：「＋新規受注入力」ボタン */
-        .order-btn { 
-            background: #2e7d32; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            font-size: 16px; 
-            border-radius: 4px; 
-            cursor: pointer; 
+      
+        /* 左上:「+新規受注入力」ボタン */
+        .order-btn {
+          background: #2e7d32;
+          color: white;
+          border: none;
+          padding: 12px 24px; /* タップ領域を大きく */
+          font-size: 22px; /* 文字を太く大きく */
+          font-weight: bold;
+          border-radius: 6px;
+          cursor: pointer;
+          min-height: 55px; /* ボタンの高さをしっかり確保 */
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .order-btn:hover { background: #1b5e20; }
-
-        /* 右上：「📖 取扱説明書を開く」ボタン（マニュアルリンク用） */
+      
+        /* 右上:「■取扱説明書を開く」ボタン */
         .manual-btn {
-            background: #0d47a1;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: auto; /* ボタンを右端に寄せる設定 */
+          background: #0d47a1;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          font-size: 22px;
+          border-radius: 6px;
+          font-weight: bold;
+          cursor: pointer;
+          margin-left: auto; /* 右寄せ構造を維持 */
+          min-height: 55px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .manual-btn:hover { background: #0a377d; }
-        
-        /* 右上：「データをすべてリセット」ボタン */
-        .reset-btn { 
-            background: #757575; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            font-size: 16px; 
-            border-radius: 4px; 
-            cursor: pointer; 
+      
+        /* 右上:「データをすべてリセット」ボタン */
+        .reset-btn {
+          background: #757575;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          font-size: 22px;
+          font-weight: bold;
+          border-radius: 6px;
+          cursor: pointer;
+          min-height: 55px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .reset-btn:hover { background: #424242; }
-        
+      
         /* 注文カード内の「削除」ボタン */
-        .delete-btn { 
-            background: #e53935; 
-            color: white; 
-            border: none; 
-            border-radius: 4px; 
+        .delete-btn {
+          background: #e53935;
+          color: white;
+          border: none;
+          border-radius: 4px;
         }
         .delete-btn:hover { background: #b71c1c; }
-        
-        /* ---------------------------------------------------
-        注文カード（受注データ）の見栄え
-        --------------------------------------------------- */
-        .order-list { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 8px; 
-            margin: 0; 
-            padding: 0; 
-            list-style: none; 
+      
+        /* ========================================================
+           5. 注文カード（受注データ）の見栄え・ボタン誤操作防止
+           ======================================================== */
+        .order-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px; /* カード同士の間隔を広げる */
+          margin: 0;
+          padding: 0;
+          list-style: none;
         }
-        /* 通常状態：未提供の黄色いカード */
-        .order-card { 
-            background: #fffde7; 
-            border: 1px solid #fbc02d; 
-            padding: 6px 10px; 
-            border-radius: 4px; 
-            font-size: 13px; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
-            min-width: 140px; 
+      
+        /* 通常状態: 未提供の黄色いカード */
+        .order-card {
+          background: #fffde7;
+          border: 2px solid #fbc02d; /* 輪郭をハッキリ */
+          padding: 12px 15px; /* カード内を広く */
+          border-radius: 6px;
+          font-size: 20px; /* カード全体の文字サイズ */
+          box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          min-width: 180px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
         }
-        /* 提供完了状態：固定ロックがかかった緑色のカード */
-        .order-card.served { 
-            background: #e8f5e9; 
-            border-color: #81c784; 
-            color: #2e7d32; 
+      
+        /* 注文番号と数量 */
+        .order-card strong {
+          font-size: 22px;
+          display: block;
+          margin-bottom: 5px;
         }
-        /* 味付けやトッピングを記載するメモ枠（グレー） */
-        .order-memo { 
-            background: rgba(0,0,0,0.05); 
-            padding: 2px 4px; 
-            border-radius: 3px; 
-            font-size: 11px; 
-            margin-top: 3px; 
-            color: #555; 
-            word-break: break-all; 
+      
+        /* 提供完了状態: 固定ロックがかかった緑色のカード */
+        .order-card.served {
+          background: #e8f5e9;
+          border-color: #81c784;
+          color: #2e7d32;
         }
-        .order-actions { 
-            margin-top: 5px; 
-            display: flex; 
-            gap: 5px; 
+      
+        /* 味付けやトッピングを記載するメモ枠 (グレー) */
+        .order-memo {
+          background: rgba(0,0,0,0.05);
+          padding: 6px 8px; /* 文字が読みやすいよう余白を確保 */
+          border-radius: 4px;
+          font-size: 18px; /* メモ（ねぎマヨ等）をクッキリ表示 */
+          font-weight: bold;
+          margin-top: 5px;
+          margin-bottom: 10px;
+          color: #333;
+          word-break: break-all;
+          border: 1px solid #ddd;
         }
-        .order-actions button { 
-            font-size: 11px; 
-            cursor: pointer; 
-            padding: 2px 6px; 
+      
+        /* カード内のアクションボタングループ */
+        .order-actions {
+          margin-top: 5px;
+          display: flex;
+          gap: 8px; /* ボタンが近すぎて押し間違えないよう隙間を空ける */
         }
-        
-        /* ---------------------------------------------------
-        インターフェース（特殊表示・ダイアログ窓）
-        --------------------------------------------------- */
+      
+        .order-actions button {
+          font-size: 18px; /* チェックやバツ、変更の文字を大きく */
+          font-weight: bold;
+          cursor: pointer;
+          padding: 8px 12px; /* 指でも確実に捉えられるサイズ */
+          min-height: 45px; /* 高さを確保 */
+          flex: 1; /* 横幅を均等に広げて押しやすく */
+          border: 1px solid #ced4da;
+          border-radius: 4px;
+        }
+      
+        /* ========================================================
+           6. インターフェース（特殊表示・ダイアログ窓）
+           ======================================================== */
         /* 現在の時刻に該当する行を明るい黄色でハイライト */
-        .current-time-info { 
-            font-weight: bold; 
-            color: #333; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
+        .current-time-info {
+          font-weight: bold;
+          color: #333;
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          font-size: 20px;
         }
+      
         .current-row { background-color: #fff9c4 !important; }
-        
-        /* 環境切り替え（本番／テスト）のラジオボタン枠 */
-        .env-toggle { 
-            background: #eceff1; 
-            padding: 6px 12px; 
-            border-radius: 20px; 
-            border: 1px solid #b0bec5; 
-            font-size: 14px; 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
+      
+        /* 環境切り替え (本番/テスト) のラジオボタン枠 */
+        .env-toggle {
+          background: #eceff1;
+          padding: 8px 16px;
+          border-radius: 20px;
+          border: 1px solid #b0bec5;
+          font-size: 18px; /* テキストを大きく */
+          display: flex;
+          gap: 15px;
+          align-items: center;
         }
-        .env-toggle label { 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; 
+      
+        .env-toggle label {
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
-        
-        /* 入力用ポップアップ（モーダルダイアログ）の背面背景 */
-        .modal-overlay { 
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0, 0, 0, 0.5); 
-            z-index: 1000; 
-            justify-content: center; 
-            align-items: center; 
+      
+        /* 入力用ポップアップ (モーダルダイアログ) の背面背景 */
+        .modal-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 1000;
+          justify-content: center;
+          align-items: center;
         }
+      
         /* 入力用ポップアップの本体ボックス */
-        .modal-box { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
-            width: 320px; 
-            border-top: 5px solid #2e7d32; 
+        .modal-box {
+          background: white;
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          width: 450px; /* 入力欄拡大に合わせてボックスを横に拡張 */
+          border-top: 5px solid #2e7d32;
         }
-        .modal-box h3 { 
-            margin-top: 0; 
-            color: #333; 
-            font-size: 18px; 
-            margin-bottom: 15px; 
+      
+        .modal-box h3 {
+          margin-top: 0;
+          color: #333;
+          font-size: 24px; /* タイトルを大文字に */
+          margin-bottom: 20px;
         }
-        .modal-form-group { margin-bottom: 15px; }
-        .modal-form-group label { 
-            display: block; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            font-size: 14px; 
-            color: #555; 
+      
+        .modal-form-group { margin-bottom: 20px; }
+      
+        .modal-form-group label {
+          display: block;
+          font-weight: bold;
+          margin-bottom: 8px;
+          font-size: 20px; /* ラベルを大きく */
+          color: #495057;
         }
-        .modal-form-group input { 
-            width: 93%; 
-            padding: 8px; 
-            font-size: 16px; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
+      
+        .modal-form-group input {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 12px; /* 入力枠を広く */
+          font-size: 22px; /* タイピング中の文字を巨大化 */
+          border: 1px solid #ccc;
+          border-radius: 4px;
         }
-        .modal-buttons { 
-            display: flex; 
-            gap: 10px; 
-            justify-content: flex-end; 
-            margin-top: 20px; 
+      
+        .modal-buttons {
+          display: flex;
+          gap: 15px;
+          justify-content: flex-end;
+          margin-top: 25px;
         }
-        .modal-buttons button { 
-            padding: 8px 16px; 
-            font-size: 14px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
+      
+        .modal-buttons button {
+          padding: 12px 24px;
+          font-size: 20px; /* モーダル内のOK・閉じるボタンを拡大 */
+          font-weight: bold;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          min-height: 50px;
         }
-        .modal-submit { 
-            background: #2e7d32; 
-            color: white; 
-            font-weight: bold; 
+      
+        .modal-submit {
+          background: #2e7d32;
+          color: white;
         }
         .modal-submit:hover { background: #1b5e20; }
+      
         .modal-cancel { background: #e0e0e0; color: #333; }
         .modal-cancel:hover { background: #ccc; }
-
-        /* 画面幅が768px以下のスマホ・タブレット向け設定 */
+      
+        /* ========================================================
+           7. スマートフォン縦画面時の微調整（元の構造の崩れを防ぐ最小限の設定）
+           ======================================================== */
         @media screen and (max-width: 768px) {
-            /* 全体の余白を小さくして画面を広く使う */
-            body {
-                margin: 10px;
-            }
-
-            /* 上部固定エリアの文字サイズを調整 */
-            .summary-box {
-                flex-direction: column; /* 縦並びにする */
-                gap: 5px;
-                font-size: 14px;
-                padding: 10px;
-            }
-
-            /* コントロールパネルのボタンや操作類を縦・等幅に整列 */
-            .controls {
-                flex-direction: column;
-                align-items: stretch; /* 横幅いっぱいに広げる */
-                gap: 10px;
-                padding: 10px;
-            }
-
-            /* ボタンの余白調整とマニュアルボタンの右寄せ解除 */
-            .order-btn, .manual-btn, .reset-btn {
-                width: 100%;
-                margin-left: 0 !important; /* manual-btnのmargin-left: autoを打ち消す */
-                text-align: center;
-                padding: 12px; /* タップしやすいように少し厚めに */
-            }
-
-            .current-time-info {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-                width: 100%;
-            }
-
-            /* テーブルヘッダーの固定位置をスマホの固定エリアの高さ（目安）に合わせる */
-            /* ※要素が縦に並んで固定エリアが広くなるため、数値を調整 */
-            th {
-                top: 250px; /* 実際の固定エリアの高さに応じて調整してください */
-            }
-
-            /* テーブルの各セル幅をスマホ向けに最適化 */
-            .time-col {
-                width: 60px;
-                font-size: 14px;
-            }
-
-            .capacity-col {
-                width: 110px;
-            }
-
-            .capacity-input {
-                width: 40px;
-                font-size: 14px;
-            }
-
-            .confirm-btn {
-                padding: 4px 6px;
-                font-size: 11px;
-                margin-left: 2px;
-            }
-
-            /* 注文カードが横に溢れないよう縦・横に柔軟に配置 */
-            .order-list {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .order-card {
-                min-width: 0; /* 幅制限を解除 */
-                width: 100%;
-                box-sizing: border-box;
-            }
+          body {
+            margin: 10px;
+          }
+          .summary-box {
+            flex-direction: column;
+            gap: 5px;
+            font-size: 18px;
+          }
+          .controls {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+          }
+          .order-btn, .manual-btn, .reset-btn {
+            width: 100%;
+            margin-left: 0 !important;
+            text-align: center;
+          }
+          .current-time-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+          .order-list {
+            flex-direction: column;
+          }
+          .order-card {
+            width: 100%;
+            box-sizing: border-box;
+          }
         }
-    </style>
+    </style>   
 </head>
 <body>
     <h1>🐙 たこ焼き受注管理システム 🐙</h1>
