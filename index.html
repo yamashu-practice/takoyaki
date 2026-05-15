@@ -321,6 +321,84 @@
         .modal-submit:hover { background: #1b5e20; }
         .modal-cancel { background: #e0e0e0; color: #333; }
         .modal-cancel:hover { background: #ccc; }
+
+        /* 画面幅が768px以下のスマホ・タブレット向け設定 */
+        @media screen and (max-width: 768px) {
+            /* 全体の余白を小さくして画面を広く使う */
+            body {
+                margin: 10px;
+            }
+
+            /* 上部固定エリアの文字サイズを調整 */
+            .summary-box {
+                flex-direction: column; /* 縦並びにする */
+                gap: 5px;
+                font-size: 14px;
+                padding: 10px;
+            }
+
+            /* コントロールパネルのボタンや操作類を縦・等幅に整列 */
+            .controls {
+                flex-direction: column;
+                align-items: stretch; /* 横幅いっぱいに広げる */
+                gap: 10px;
+                padding: 10px;
+            }
+
+            /* ボタンの余白調整とマニュアルボタンの右寄せ解除 */
+            .order-btn, .manual-btn, .reset-btn {
+                width: 100%;
+                margin-left: 0 !important; /* manual-btnのmargin-left: autoを打ち消す */
+                text-align: center;
+                padding: 12px; /* タップしやすいように少し厚めに */
+            }
+
+            .current-time-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                width: 100%;
+            }
+
+            /* テーブルヘッダーの固定位置をスマホの固定エリアの高さ（目安）に合わせる */
+            /* ※要素が縦に並んで固定エリアが広くなるため、数値を調整 */
+            th {
+                top: 250px; /* 実際の固定エリアの高さに応じて調整してください */
+            }
+
+            /* テーブルの各セル幅をスマホ向けに最適化 */
+            .time-col {
+                width: 60px;
+                font-size: 14px;
+            }
+
+            .capacity-col {
+                width: 110px;
+            }
+
+            .capacity-input {
+                width: 40px;
+                font-size: 14px;
+            }
+
+            .confirm-btn {
+                padding: 4px 6px;
+                font-size: 11px;
+                margin-left: 2px;
+            }
+
+            /* 注文カードが横に溢れないよう縦・横に柔軟に配置 */
+            .order-list {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .order-card {
+                min-width: 0; /* 幅制限を解除 */
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
     </style>
 </head>
 <body>
