@@ -465,8 +465,8 @@
                 <input type="text" id="modal-qty" placeholder="例：3（全角・半角どちらでも可）">
             </div>
             <div class="modal-form-group">
-                <label for="modal-memo">味付け・メモ（任意）</label>
-                <input type="text" id="modal-memo" placeholder="例：ネギマヨ、ソース、カラシ抜き">
+                <label for="modal-memo">メモ（任意）</label>
+                <input type="text" id="modal-memo" placeholder="例：お客さんの名前">
             </div>
             <div class="modal-buttons">
                 <button class="modal-cancel" onclick="closeOrderModal()">キャンセル</button>
@@ -791,7 +791,7 @@
                     
                     // 「変更」「提供」「削除」のすべてのボタンに注文固有のIDを直接紐付けて埋め込む
                     li.innerHTML = `
-                        <div><strong>#${formattedId}</strong>: ${order.quantity} 舟 [${isServed ? '提供済' : '未提供'}]</div>
+                        <div><strong>注文番号${formattedId}</strong>: ${order.quantity} 舟 [${isServed ? '提供済' : '未提供'}]</div>
                         ${memoHtml}
                         <div class="order-actions">
                             <button onclick="openEditModal(${order.id})">変更</button>
@@ -840,7 +840,7 @@
             const order = allOrders.find(o => o.id === orderId);
             if (!order) return;
             
-            document.getElementById('modal-title').textContent = `✏ 注文 #${String(order.id).padStart(3, '0')} の変更`;
+            document.getElementById('modal-title').textContent = `✏ 注文番号${String(order.id).padStart(3, '0')} の変更`;
             document.getElementById('edit-order-id').value = order.id; // どのIDの注文を修正するか記憶させる
             document.getElementById('modal-qty').value = order.quantity;
             document.getElementById('modal-memo').value = order.memo || "";
@@ -935,7 +935,7 @@
          */
         function deleteOrder(orderId) {
             const formattedId = String(orderId).padStart(3, '0');
-            if (!confirm(`注文 #${formattedId} を完全に削除（キャンセル）してもよろしいですか？`)) {
+            if (!confirm(`注文番号${formattedId} を完全に削除（キャンセル）してもよろしいですか？`)) {
                 return; // キャンセルされた場合は中断
             }
             // マスターリストから該当IDの注文データ「だけ」をフィルター除去して上書き
@@ -960,10 +960,10 @@
 
             if (order.status === 'active') {
                 nextStatus = 'served';
-                confirmMessage = `注文 #${formattedId} （${order.quantity}舟） を「提供済」にしてもよろしいですか？`;
+                confirmMessage = `注文番号${formattedId} （${order.quantity}舟） を「提供済」にしてもよろしいですか？`;
             } else {
                 nextStatus = 'active';
-                confirmMessage = `注文 #${formattedId} を「未済（未提供）」に戻してもよろしいですか？`;
+                confirmMessage = `注文番号${formattedId} を「未済（未提供）」に戻してもよろしいですか？`;
             }
 
             // === 【ダイアログ表示】ユーザーがキャンセルした場合はここで安全に処理を抜ける ===
