@@ -651,14 +651,20 @@
         }
     
         function getSlotIndexByTime(timeStr) {
+          if (!timeStr) return 0;
           const [h, m] = timeStr.split(':').map(Number);
           const totalMin = h * 60 + m;
-          if (totalMin < 11 * 60) return 0;
-          const diff = totalMin - (11 * 60);
+          const startMin = 11 * 60;
+          const endMin = 20 * 60;
+    
+          if (totalMin < startMin) return 0;
+          if (totalMin >= endMin) return TOTAL_SLOTS - 1;
+    
+          const diff = totalMin - startMin;
           let idx = Math.floor(diff / SLOT_INTERVAL_MIN);
-          if (idx >= TOTAL_SLOTS) {
-            idx = TOTAL_SLOTS - 1;
-          }
+    
+          if (idx < 0) idx = 0;
+          if (idx >= TOTAL_SLOTS) idx = TOTAL_SLOTS - 1;
           return idx;
         }
     
@@ -695,62 +701,83 @@
             let order = sortedActives[i];
             if (processedIds.has(order.id)) continue;
     
+            // 同一グループを特定
             let group = sortedActives.filter(o => o.groupUniqueId === order.groupUniqueId);
             group.forEach(g => processedIds.add(g.id));
     
+            // グループ全体の合計数量を計算
+            const groupTotalQty = group.reduce((sum, g) => sum + g.quantity, 0);
+    
+            // ご提案アルゴリズム（ToBe仕様）に100%基づいた、描画エンジン側の一括配置探索
             let finalStartSlot = currentSlot;
+            let foundStartSlot = false;
     
             for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
-              if (group.length === 1) {
-                if (group.quantity <= remainingCapacity[s]) {
+              const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+              const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
+    
+              if (slotRemainingCap <= 0) continue;
+    
+              // ① 受注（グループ総数）を丸ごと入れられる枠が見つかるまで枠を移動
+              if (groupTotalQty <= slotRemainingCap) {
+                finalStartSlot = s;
+                foundStartSlot = true;
+                break; 
+              }
+    
+              // ② 空っぽの枠に行き着いて、かつ受注が分割なしで入れられない場合
+              if (currentOrdersSum === 0) {
+                let tempRemaining = groupTotalQty;
+                let isContinuousPossible = true;
+    
+                for (let checkSlot = s; checkSlot < TOTAL_SLOTS && tempRemaining > 0; checkSlot++) {
+                  const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
+                  const testRemainingCap = Math.max(0, hourlyCapacities[checkSlot] - testOrdersSum);
+    
+                  // 連続テスト。途中で満杯の枠がある、または空枠でない場合は不合格
+                  if (testRemainingCap <= 0 || (checkSlot > s && testOrdersSum > 0)) {
+                    isContinuousPossible = false;
+                    break;
+                  }
+    
+                  let take = Math.min(tempRemaining, testRemainingCap);
+                  tempRemaining -= take;
+                }
+    
+                // 隣り合う連続枠ですべて綺麗に収まることが確定したら、ここを開始位置にする
+                if (isContinuousPossible && tempRemaining === 0) {
                   finalStartSlot = s;
-                  break;
+                  foundStartSlot = true;
+                  break; 
                 }
-                if (hourlyCapacities[s] === remainingCapacity[s] && group.quantity <= hourlyCapacities[s]) {
-                  finalStartSlot = s;
-                  break;
-                }
-                finalStartSlot = s;
-                continue;
               }
-    
-              if (hourlyCapacities[s] !== remainingCapacity[s]) {
-                finalStartSlot = s;
-                continue;
-              }
-    
-              let isContinuousPossible = true;
-              let tempCapacities = [...remainingCapacity];
-    
-              for (let gIdx = 0; gIdx < group.length; gIdx++) {
-                let checkSlot = s + gIdx;
-                if (checkSlot >= TOTAL_SLOTS) {
-                  isContinuousPossible = false;
-                  break;
-                }
-    
-                if (hourlyCapacities[checkSlot] !== tempCapacities[checkSlot] || group[gIdx].quantity > tempCapacities[checkSlot]) {
-                  isContinuousPossible = false;
-                  break;
-                }
-                tempCapacities[checkSlot] -= group[gIdx].quantity;
-              }
-    
-              if (isContinuousPossible) {
-                finalStartSlot = s;
-                break;
-              }
-              finalStartSlot = s;
             }
     
-            for (let gIdx = 0; gIdx < group.length; gIdx++) {
-              let assignSlot = finalStartSlot + gIdx;
-              if (assignSlot >= TOTAL_SLOTS) assignSlot = TOTAL_SLOTS - 1;
+            // 万が一、上記の理想条件に合う枠が本日中になかった場合の最終セーフガード（データの消失を完全防止）
+            if (!foundStartSlot) {
+              for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
+                if (remainingCapacity[s] > 0) {
+                  finalStartSlot = s;
+                  break;
+                }
+              }
+            }
     
+            // 決定した連続枠から順番に、グループ内の小分けカードを一切飛び飛びにせず順番にアサイン
+            let runningStartSlot = finalStartSlot;
+            for (let gIdx = 0; gIdx < group.length; gIdx++) {
               let gOrder = group[gIdx];
-              gOrder.assignedHour = assignSlot;
-              displaySlots[assignSlot].push(gOrder);
-              remainingCapacity[assignSlot] -= gOrder.quantity;
+              
+              // 隙間に入り切らない場合は自動で次のスロット（お隣）へ引き継ぐ
+              while (runningStartSlot < TOTAL_SLOTS) {
+                if (remainingCapacity[runningStartSlot] >= gOrder.quantity || runningStartSlot === TOTAL_SLOTS - 1) {
+                  gOrder.assignedHour = runningStartSlot;
+                  displaySlots[runningStartSlot].push(gOrder);
+                  remainingCapacity[runningStartSlot] -= gOrder.quantity;
+                  break;
+                }
+                runningStartSlot++;
+              }
             }
           }
     
@@ -813,7 +840,6 @@
     
               cardHtml += `<div class="order-actions">`;
               if (order.status === 'active') {
-                // 【新仕様】：ボタンから絵文字を完全に廃止し、日本語テキストのみに統一
                 cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#4caf50; color:white; border:none;">提供済</button>`;
                 cardHtml += `<button onclick="openEditModal(${order.id})" style="background:#ff9800; color:white; border:none;">変更</button>`;
               } else {
@@ -890,6 +916,9 @@
           const memo = memoInputEl.value.trim();
     
           if (editId === "") {
+            // ==========================================
+            // 【新規受注ルート】ご提案アルゴリズムの完全再現
+            // ==========================================
             let remainingQty = qty;
             let currentSlot = getCurrentSlotIndex();
             let finalStartSlot = -1;
@@ -898,25 +927,28 @@
             const thisGroupUniqueId = nextGroupId++;
     
             for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
-              const currentOrdersSum = allOrders.filter(o => o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+              const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
               const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
     
               if (slotRemainingCap <= 0) continue;
     
+              // ・まずは受注を丸ごと入れられる枠が見つかるまで枠を移動
               if (remainingQty <= slotRemainingCap) {
                 finalStartSlot = s;
                 isDividedMode = false;
                 break; 
               }
     
+              // ・もし空っぽの枠に行き着いて、かつ受注が分割なしで入れられないなら
               if (currentOrdersSum === 0) {
                 let tempRemaining = remainingQty;
                 let isContinuousPossible = true;
     
                 for (let checkSlot = s; checkSlot < TOTAL_SLOTS && tempRemaining > 0; checkSlot++) {
-                  const testOrdersSum = allOrders.filter(o => o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
+                  const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
                   const testRemainingCap = Math.max(0, hourlyCapacities[checkSlot] - testOrdersSum);
     
+                  // 分割した受注は、必ず隣り合う時間枠に入るようにする
                   if (testRemainingCap <= 0 || (checkSlot > s && testOrdersSum > 0)) {
                     isContinuousPossible = false;
                     break;
@@ -925,17 +957,21 @@
                   tempRemaining -= take;
                 }
     
+                // ・もし最初の空枠から連続して分割して収まるなら合格
                 if (isContinuousPossible && tempRemaining === 0) {
                   finalStartSlot = s;
                   isDividedMode = true;
                   break;
                 }
+                
+                // ・ダメなら次の空枠を探して隣り合う時間枠に入るように分割されるまで試行
               }
             }
     
+            // 正式アサイン処理
             if (finalStartSlot !== -1) {
               for (let s = finalStartSlot; s < TOTAL_SLOTS && remainingQty > 0; s++) {
-                const currentOrdersSum = allOrders.filter(o => o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+                const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
                 const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
     
                 if (slotRemainingCap <= 0) continue;
@@ -955,8 +991,9 @@
               }
             }
     
+            // ・最後の枠まで入れられなかったらエラーを出す
             if (remainingQty > 0 || finalStartSlot === -1) {
-              alert(`【生産上限エラー】受注を分断させずにまとめて焼ける、連続した「空き時間枠」が本日中に確保できません。`);
+              alert(`【生産上限エラー】受注を分断させずにまとめて焼ける、連続した「空き時間枠」が本日中に確保できません。\n各時間枠の生産可能数を増やすか、既存の注文を整理してください。`);
             }
     
           } else {
@@ -1054,7 +1091,11 @@
             document.getElementById('test-time-control').style.display = "none";
           } else {
             document.getElementById('test-time-control').style.display = "flex";
-            document.getElementById('virtual-time-select').value = testVirtualTime;
+            
+            // 仮想時刻ドロップダウンの値を内部変数に強制同期
+            const selectEl = document.getElementById('virtual-time-select');
+            testVirtualTime = selectEl.value; 
+            selectEl.value = testVirtualTime;
           }
           saveToStorage();
           renderTable();
@@ -1063,6 +1104,7 @@
         function updateVirtualTime(val) {
           testVirtualTime = val;
           saveToStorage();
+          document.getElementById('env-testmode').checked = true;
           renderTable();
         }
     
