@@ -12,6 +12,7 @@
     body {
       font-family: sans-serif;
       margin: 20px;
+      margin-bottom: 20px; /* 通常配置のフッターに合わせた自然な余白 */
       background: #f9f9f9;
       font-size: 20px; /* 基本文字を大きく */
     }
@@ -25,9 +26,9 @@
     }
 
     /* ========================================================
-       2. 画面上部へのエリア完全固定（追従レイアウト）
+       2. 画面上部へのエリア完全固定（追従レイアウト・省スペース版）
        ======================================================== */
-    /* 集計ボックス、コントロールパネル、そしてテーブルタイトル（th）までを
+    /* 集計ボックス＋新規受注ボタン、そしてテーブルタイトル（th）までを
        一体化して画面最上部に完全固定するためのコンテナ */
     .fixed-header-area {
       position: sticky;
@@ -37,35 +38,46 @@
       background: #f9f9f9;
       z-index: 100;
       padding-top: 5px;
-      padding-bottom: 0; /* 下のthとの隙間を無くすため0に変更 */
+      padding-bottom: 0;
       display: flex;
       flex-direction: column;
     }
 
-    /* 最上部に配置された青色の売上・受注リアルタイム集計ボックス */
+    /* 最上部に配置された売上・受注リアルタイム集計ボックス
+       【新仕様】: 新規受注ボタンを右端に美しく同居させるため横並びに変更 */
     .summary-box {
       background: #e3f2fd;
       border: 1px solid #90caf9;
-      padding: 15px 20px; /* 余白を広げて視認性向上 */
+      padding: 12px 20px; /* 縦のパディングを少し絞って省スペース化 */
       border-radius: 8px;
-      margin-bottom: 0;
+      margin-bottom: 10px; /* テーブルヘッダーとの適切な隙間 */
       display: flex;
-      gap: 30px;
-      font-size: 22px; /* 数字と文字を大きく */
+      justify-content: space-between; /* 左側に数字、右側にボタンを配置 */
+      align-items: center; /* 縦方向を中央揃えに */
+      font-size: 22px;
       font-weight: bold;
       color: #0d47a1;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    /* 操作パネル（ボタン、環境モード、時計の横並びエリア） */
-    .controls {
-      background: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-top: 10px;
-      margin-bottom: 10px; /* 下に配置されるthとの間にクッションを確保 */
+    /* 集計テキスト部分を包むコンテナ */
+    .summary-data-items {
       display: flex;
-      gap: 15px;
+      gap: 30px;
+    }
+
+    /* ========================================================
+       2-B. 画面最下部のコントロールエリア（スクロール時のみ出現）
+       ======================================================== */
+    .fixed-footer-area {
+      position: relative;
+      margin-top: 40px; /* テーブルとの間に少し隙間を空けます */
+      background: #fff;
+      border: 1px solid #ced4da; /* 周りを囲む枠線にしてカード風に見やすく */
+      border-radius: 8px;
+      padding: 15px 20px;
+      display: flex;
+      gap: 20px;
       align-items: center;
       flex-wrap: wrap;
     }
@@ -100,8 +112,7 @@
       color: white;
       font-size: 20px; /* ヘッダーの文字を大きく */
       
-      /* 固定値(147px)での追従を廃止。
-         文字サイズ変更によってヘッダー全体の高さがどれだけ伸びても、
+      /* 文字サイズ変更によってヘッダー全体の高さがどれだけ伸びても、
          .fixed-header-area の直下に「自動で隙間なく吸着」させます */
       position: sticky;
       top: 0; 
@@ -134,7 +145,7 @@
       padding: 4px;
     }
 
-    /* 新機能：残りの受注可能数を表示するエリアのスタイル設定 */
+    /* 残りの受注可能数を表示するエリアのスタイル設定 */
     .avail-capacity-display {
       margin-top: 8px;
       font-size: 18px;
@@ -170,48 +181,48 @@
     }
     .confirm-btn:hover { background: #01579b; }
 
-    /* 左上:「+新規受注入力」ボタン */
+    /* 【新仕様】: 集計バーの右側にぴったり収まる「新規受注入力」ボタン */
     .order-btn {
       background: #2e7d32;
       color: white;
       border: none;
-      padding: 12px 24px; /* タップ領域を大きく */
-      font-size: 22px; /* 文字を太く大きく */
+      padding: 10px 30px; /* 集計バーの高さに合わせたスマートな余白 */
+      font-size: 22px; /* 老眼でもはっきり読める大文字 */
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
-      min-height: 55px; /* ボタンの高さをしっかり確保 */
+      min-height: 50px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      white-space: nowrap; /* 途中で改行されるのを防止 */
     }
     .order-btn:hover { background: #1b5e20; }
 
-    /* 右上:「■取扱説明書を開く」ボタン */
+    /* 下部:「取扱説明書を開く」ボタン */
     .manual-btn {
       background: #0d47a1;
       color: white;
       border: none;
-      padding: 12px 24px;
-      font-size: 22px;
+      padding: 10px 20px;
+      font-size: 18px;
       border-radius: 6px;
       font-weight: bold;
       cursor: pointer;
-      margin-left: auto; /* 右寄せ構造を維持 */
-      min-height: 55px;
+      min-height: 48px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .manual-btn:hover { background: #0a377d; }
 
-    /* 右上:「データをすべてリセット」ボタン */
+    /* 下部:「データをすべてリセット」ボタン */
     .reset-btn {
       background: #757575;
       color: white;
       border: none;
-      padding: 12px 24px;
-      font-size: 22px;
+      padding: 10px 20px;
+      font-size: 18px;
       font-weight: bold;
       border-radius: 6px;
       cursor: pointer;
-      min-height: 55px;
+      min-height: 48px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .reset-btn:hover { background: #424242; }
@@ -270,7 +281,7 @@
       background: rgba(0,0,0,0.05);
       padding: 6px 8px; /* 文字が読みやすいよう余白を確保 */
       border-radius: 4px;
-      font-size: 18px; /* メモ（ねぎマヨ等）をクッキリ表示 */
+      font-size: 18px; /* メモをクッキリ表示 */
       font-weight: bold;
       margin-top: 5px;
       margin-bottom: 10px;
@@ -287,7 +298,7 @@
     }
 
     .order-actions button {
-      font-size: 18px; /* チェックやバツ、変更の文字を大きく */
+      font-size: 18px; /* 文字を大きく見やすく */
       font-weight: bold;
       cursor: pointer;
       padding: 8px 12px; /* 指でも確実に捉えられるサイズ */
@@ -315,7 +326,7 @@
     /* 環境切り替え (本番/テスト) のラジオボタン枠 */
     .env-toggle {
       background: #eceff1;
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 20px;
       border: 1px solid #b0bec5;
       font-size: 18px; /* テキストを大きく */
@@ -360,12 +371,6 @@
       color: #333;
       font-size: 24px; /* タイトルを大文字に */
       margin-bottom: 20px;
-    }
-
-    .modal-box h4 {
-      margin-top: 0;
-      font-size: 22px;
-      margin-bottom: 10px;
     }
 
     .modal-form-group { margin-bottom: 20px; }
@@ -419,20 +424,32 @@
     @media screen and (max-width: 768px) {
       body {
         margin: 10px;
+        margin-bottom: 10px;
       }
+      /* スマホ時は、集計数字の下に新規受注ボタンが縦に並ぶように調整 */
       .summary-box {
-        flex-direction: column;
-        gap: 5px;
-        font-size: 18px;
-      }
-      .controls {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
+        font-size: 18px;
       }
-      .order-btn, .manual-btn, .reset-btn {
+      .summary-data-items {
+        flex-direction: column;
+        gap: 5px;
+      }
+      .order-btn {
         width: 100%;
-        margin-left: 0 !important;
+        text-align: center;
+        min-height: 55px;
+      }
+      .fixed-footer-area {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px;
+      }
+      .manual-btn, .reset-btn {
+        width: 100%;
         text-align: center;
       }
       .current-time-info {
@@ -454,54 +471,22 @@
 
   <!-- 
     画面最上部に完全追従して固定されるエリア
-    文字サイズ拡大に対応し、テーブルタイトル（th）までをきれいに一体化して固定します
+    【さらに省スペース化】: 新規受注ボタンを集計ボックスの内部へ完全統合しました！
   -->
   <div class="fixed-header-area">
     <h1>🐙 たこ焼き時間割・受注状況管理カウンター</h1>
 
-    <!-- リアルタイム売上・受注状況の合計集計バー -->
+    <!-- リアルタイム集計 ＆ 新規受注入力ボタンのドッキングボックス -->
     <div class="summary-box">
-      <span>全体生産上限: <span id="total-capacity-display">0</span> 舟</span>
-      <span>総受注数: <span id="total-orders-display">0</span> 舟</span>
-      <span>提供済: <span id="served-orders-display">0</span> 舟</span>
-      <span style="color:#d32f2f;">要生産数: <span id="needed-production-display">0</span> 舟</span>
-    </div>
-
-    <!-- 各種アクションボタンおよび動作環境の制御パネル -->
-    <div class="controls">
-      <button class="order-btn" onclick="openOrderModal()">＋ 新規受注入力</button>
-      
-      <!-- 本番運用 / 事前練習（テスト）の切り替えスイッチ -->
-      <div class="env-toggle">
-        <label><input type="radio" name="env-mode" id="env-production" checked onclick="changeEnvMode('production')"> 🟢 本番モード</label>
-        <label><input type="radio" name="env-mode" id="env-testmode" onclick="changeEnvMode('test')"> 🟡 テストモード</label>
+      <!-- 左側：各種売上集計データ項目 -->
+      <div class="summary-data-items">
+        <span>全体生産上限: <span id="total-capacity-display">0</span> 舟</span>
+        <span>総受注数: <span id="total-orders-display">0</span> 舟</span>
+        <span>提供済: <span id="served-orders-display">0</span> 舟</span>
+        <span style="color:#d32f2f;">要生産数: <span id="needed-production-display">0</span> 舟</span>
       </div>
-
-      <!-- 時間・時計の状況表示エリア -->
-      <div class="current-time-info">
-        <span id="current-time-text">⏱ 本番実時刻: --:--</span>
-        <!-- テスト環境時のみ出現する、手動の仮想時刻変更ドロップダウン -->
-        <div id="test-time-control" style="display:none; align-items:center; gap:5px;">
-          <label for="virtual-time-select" style="font-size:16px; font-weight:bold; color:#7f8c8d;">[仮想時間変更]:</label>
-          <select id="virtual-time-select" style="font-size:18px; padding:3px; font-weight:bold;" onchange="updateVirtualTime(this.value)">
-            <!-- 11:00から20:00までの選択肢をスクリプトから連動させます -->
-            <option value="11:00">11:00</option><option value="11:15">11:15</option><option value="11:30">11:30</option><option value="11:45">11:45</option>
-            <option value="12:00">12:00</option><option value="12:15">12:15</option><option value="12:30">12:30</option><option value="12:45">12:45</option>
-            <option value="13:00">13:00</option><option value="13:15">13:15</option><option value="13:30">13:30</option><option value="13:45">13:45</option>
-            <option value="14:00">14:00</option><option value="14:15">14:15</option><option value="14:30">14:30</option><option value="14:45">14:45</option>
-            <option value="15:00">15:00</option><option value="15:15">15:15</option><option value="15:30">15:30</option><option value="15:45">15:45</option>
-            <option value="16:00">16:00</option><option value="16:15">16:15</option><option value="16:30">16:30</option><option value="16:45">16:45</option>
-            <option value="17:00">17:00</option><option value="17:15">17:15</option><option value="17:30">17:30</option><option value="17:45">17:45</option>
-            <option value="18:00">18:00</option><option value="18:15">18:15</option><option value="18:30">18:30</option><option value="18:45">18:45</option>
-            <option value="19:00">19:00</option><option value="19:15">19:15</option><option value="19:30">19:30</option><option value="19:45">19:45</option>
-            <option value="20:00">20:00</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 右端に綺麗に整列する各種サブシステムボタン -->
-      <button class="manual-btn" onclick="openManual()">■ 取扱説明書を開く</button>
-      <button class="reset-btn" onclick="clearAllData()">データをすべてリセット</button>
+      <!-- 右側：集計バーの高さにきれいに収まる新規受注ボタン -->
+      <button class="order-btn" onclick="openOrderModal()">新規受注入力</button>
     </div>
 
     <!-- メインデータテーブルのヘッダー行（赤色タイトルバー） -->
@@ -519,14 +504,44 @@
   <!-- スケジュールタイムスケジュール本体（データ行） -->
   <table id="main-table-body-container">
     <tbody id="table-body">
-      <!-- 内部の行（tr）は、下のJavaScript側から動的に全自動生成されます -->
+      <!-- 内部の行（tr）は、JavaScript側から動的に全自動生成されます -->
     </tbody>
   </table>
+
+  <!-- 画面最下部のコントロールエリア（スクロールしきったときだけ出現） -->
+  <div class="fixed-footer-area">
+    <div class="env-toggle">
+      <label><input type="radio" name="env-mode" id="env-production" checked onclick="changeEnvMode('production')"> 本番モード</label>
+      <label><input type="radio" name="env-mode" id="env-testmode" onclick="changeEnvMode('test')"> テストモード</label>
+    </div>
+
+    <div class="current-time-info">
+      <span id="current-time-text">本番実時刻: --:--</span>
+      <div id="test-time-control" style="display:none; align-items:center; gap:5px;">
+        <label for="virtual-time-select" style="font-size:16px; font-weight:bold; color:#7f8c8d;">[仮想時間変更]:</label>
+        <select id="virtual-time-select" style="font-size:18px; padding:3px; font-weight:bold;" onchange="updateVirtualTime(this.value)">
+          <option value="11:00">11:00</option><option value="11:15">11:15</option><option value="11:30">11:30</option><option value="11:45">11:45</option>
+          <option value="12:00">12:00</option><option value="12:15">12:15</option><option value="12:30">12:30</option><option value="12:45">12:45</option>
+          <option value="13:00">13:00</option><option value="13:15">13:15</option><option value="13:30">13:30</option><option value="13:45">13:45</option>
+          <option value="14:00">14:00</option><option value="14:15">14:15</option><option value="14:30">14:30</option><option value="14:45">14:45</option>
+          <option value="15:00">15:00</option><option value="15:15">15:15</option><option value="15:30">15:30</option><option value="15:45">15:45</option>
+          <option value="16:00">16:00</option><option value="16:15">16:15</option><option value="16:30">16:30</option><option value="16:45">16:45</option>
+          <option value="17:00">17:00</option><option value="17:15">17:15</option><option value="17:30">17:30</option><option value="17:45">17:45</option>
+          <option value="18:00">18:00</option><option value="18:15">18:15</option><option value="18:30">18:30</option><option value="18:45">18:45</option>
+          <option value="19:00">19:00</option><option value="19:15">19:15</option><option value="19:30">19:30</option><option value="19:45">19:45</option>
+          <option value="20:00">20:00</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="manual-btn" style="margin-left: auto;" onclick="openManual()">取扱説明書を開く</button>
+    <button class="reset-btn" onclick="clearAllData()">データをすべてリセット</button>
+  </div>
 
   <!-- 新規受注入力および内容変更を行うポップアップダイアログ（モーダル窓） -->
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal-box">
-      <h3 id="modal-title">🐙 新規受注入力</h3>
+      <h3 id="modal-title">新規受注入力</h3>
       <div class="modal-form-group">
         <label for="order-qty">数量 (必須・舟数)</label>
         <input type="text" id="order-qty" inputmode="numeric" placeholder="例: 3">
@@ -541,7 +556,7 @@
       </div>
     </div>
   </div>
-    <!-- ========================================================
+  <!-- ========================================================
        ここから【パート②】JavaScript（スクリプト）以降の部分
        ======================================================== -->
        <script>
@@ -554,7 +569,7 @@
     
         // アプリケーション全体の共通データ状態（マスター）
         let nextOrderNumber = 1;      // 次に発番する注文番号
-        let nextGroupId = 1;          // 【新設】：次に発番する一括受注グループID
+        let nextGroupId = 1;          // 次に発番する一括受注グループID
         let envMode = 'production';   // 動作環境モード（'production' または 'test'）
         let hourlyCapacities = [];    // 各スロットの生産上限数（キャパ）
         let allOrders = [];           // 全ての注文オブジェクトを格納する配列
@@ -584,7 +599,7 @@
             try {
               const data = JSON.parse(stored);
               nextOrderNumber = data.nextOrderNumber || 1;
-              nextGroupId = data.nextGroupId || 1; // グループIDの復元
+              nextGroupId = data.nextGroupId || 1;
               envMode = data.envMode || 'production';
               hourlyCapacities = data.hourlyCapacities || [];
               allOrders = data.allOrders || [];
@@ -680,21 +695,18 @@
             let order = sortedActives[i];
             if (processedIds.has(order.id)) continue;
     
-            // 【新仕様】：メモ文字列に依存せず、内部キー groupUniqueId で同一グループを100%確実に特定
             let group = sortedActives.filter(o => o.groupUniqueId === order.groupUniqueId);
             group.forEach(g => processedIds.add(g.id));
     
-            // ご提案の「空枠起点・隣接連続ルール」で、このグループ全員が収まる最初の連続枠を探索
             let finalStartSlot = currentSlot;
     
             for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
-              // グループが1枚のカード（分割なし）の場合は、隙間に入っても構わない
               if (group.length === 1) {
-                if (group[0].quantity <= remainingCapacity[s]) {
+                if (group.quantity <= remainingCapacity[s]) {
                   finalStartSlot = s;
                   break;
                 }
-                if (hourlyCapacities[s] === remainingCapacity[s] && group[0].quantity <= hourlyCapacities[s]) {
+                if (hourlyCapacities[s] === remainingCapacity[s] && group.quantity <= hourlyCapacities[s]) {
                   finalStartSlot = s;
                   break;
                 }
@@ -702,7 +714,6 @@
                 continue;
               }
     
-              // グループが複数枚（分割あり）の場合は、完全に真っ新な空枠を起点として連続して入るかテスト
               if (hourlyCapacities[s] !== remainingCapacity[s]) {
                 finalStartSlot = s;
                 continue;
@@ -718,7 +729,6 @@
                   break;
                 }
     
-                // 分割の2枠目以降も、別の注文と混ざるのを禁止するため、完全に空っぽの枠である必要があります
                 if (hourlyCapacities[checkSlot] !== tempCapacities[checkSlot] || group[gIdx].quantity > tempCapacities[checkSlot]) {
                   isContinuousPossible = false;
                   break;
@@ -733,7 +743,6 @@
               finalStartSlot = s;
             }
     
-            // 決定した連続枠（finalStartSlot）から順番に、グループ全員を配置
             for (let gIdx = 0; gIdx < group.length; gIdx++) {
               let assignSlot = finalStartSlot + gIdx;
               if (assignSlot >= TOTAL_SLOTS) assignSlot = TOTAL_SLOTS - 1;
@@ -804,12 +813,13 @@
     
               cardHtml += `<div class="order-actions">`;
               if (order.status === 'active') {
-                cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#4caf50; color:white; border:none;">✓ 提供済</button>`;
+                // 【新仕様】：ボタンから絵文字を完全に廃止し、日本語テキストのみに統一
+                cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#4caf50; color:white; border:none;">提供済</button>`;
                 cardHtml += `<button onclick="openEditModal(${order.id})" style="background:#ff9800; color:white; border:none;">変更</button>`;
               } else {
-                cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#ffeb3b; color:#333; border:none;">↩ 未済へ</button>`;
+                cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#ffeb3b; color:#333; border:none;">未済へ</button>`;
               }
-              cardHtml += `<button class="delete-btn" onclick="deleteOrder(${order.id})">❌ 削除</button>`;
+              cardHtml += `<button class="delete-btn" onclick="deleteOrder(${order.id})">削除</button>`;
               cardHtml += `</div>`;
     
               li.innerHTML = cardHtml;
@@ -821,7 +831,6 @@
             tbody.appendChild(tr);
           }
     
-          // --- 【ステップD: 合計集計バーの数値更新】 ---
           const totalCap = hourlyCapacities.reduce((sum, v) => sum + v, 0);
           const totalOrdersSum = allOrders.reduce((sum, o) => sum + o.quantity, 0);
           const servedOrdersSum = allOrders.filter(o => o.status === 'served').reduce((sum, o) => sum + o.quantity, 0);
@@ -839,7 +848,7 @@
     
         function openOrderModal() {
           editId = "";
-          document.getElementById('modal-title').innerText = "🐙 新規受注入力";
+          document.getElementById('modal-title').innerText = "新規受注入力";
           document.getElementById('order-qty').value = "";
           document.getElementById('order-memo').value = "";
           document.getElementById('modal-overlay').style.display = "flex";
@@ -851,7 +860,7 @@
           if (!order) return;
     
           editId = id;
-          document.getElementById('modal-title').innerText = `✏️ 注文内容の変更 (#${String(id).padStart(3, '0')})`;
+          document.getElementById('modal-title').innerText = `注文内容の変更 (#${String(id).padStart(3, '0')})`;
           document.getElementById('order-qty').value = order.quantity;
           document.getElementById('order-memo').value = order.memo;
           document.getElementById('modal-overlay').style.display = "flex";
@@ -881,15 +890,11 @@
           const memo = memoInputEl.value.trim();
     
           if (editId === "") {
-            // ==========================================
-            // 【新規受注ルート】新キー groupUniqueId による完全グループ管理
-            // ==========================================
             let remainingQty = qty;
             let currentSlot = getCurrentSlotIndex();
             let finalStartSlot = -1;
             let isDividedMode = false;
             
-            // 今回の一括受注を表す、不変の固有グループIDを発番
             const thisGroupUniqueId = nextGroupId++;
     
             for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
@@ -939,7 +944,7 @@
     
                 allOrders.push({
                   id: nextOrderNumber++,
-                  groupUniqueId: thisGroupUniqueId, // 【新設】：識別用共通キーをすべての分割カードに同一注入
+                  groupUniqueId: thisGroupUniqueId,
                   quantity: takeQty,
                   memo: remainingQty === qty ? memo : memo + ` (分割数: ${takeQty}舟)`,
                   status: 'active',
@@ -955,13 +960,10 @@
             }
     
           } else {
-            // ==========================================
-            // 【内容変更ルート】
-            // ==========================================
             const order = allOrders.find(o => o.id === parseInt(editId, 10));
             if (order) {
               order.quantity = qty;
-              order.memo = memo; // メモを自由に変更しても、groupUniqueId は不変なので連動は維持されます
+              order.memo = memo;
             }
           }
     
@@ -1040,9 +1042,9 @@
           const timeStr = getCurrentTimeStr();
           const timeEl = document.getElementById('current-time-text');
           if (envMode === 'production') {
-            timeEl.innerText = `⏱ 本番実時刻: ${timeStr}`;
+            timeEl.innerText = `本番実時刻: ${timeStr}`;
           } else {
-            timeEl.innerText = `⚙️ テスト仮想時刻: ${timeStr}`;
+            timeEl.innerText = `テスト仮想時刻: ${timeStr}`;
           }
         }
     
