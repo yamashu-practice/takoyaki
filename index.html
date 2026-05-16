@@ -916,87 +916,99 @@
           const memo = memoInputEl.value.trim();
     
           if (editId === "") {
-            // ==========================================
-            // 【新規受注ルート】ご提案アルゴリズムの完全再現
-            // ==========================================
-            let remainingQty = qty;
-            let currentSlot = getCurrentSlotIndex();
-            let finalStartSlot = -1;
-            let isDividedMode = false;
-            
-            const thisGroupUniqueId = nextGroupId++;
-    
-            for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
-              const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
-              const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
-    
-              if (slotRemainingCap <= 0) continue;
-    
-              // ・まずは受注を丸ごと入れられる枠が見つかるまで枠を移動
-              if (remainingQty <= slotRemainingCap) {
-                finalStartSlot = s;
-                isDividedMode = false;
-                break; 
+        // ==========================================
+        // 【新規受注ルート】塊キープ＆完全隣接最小分割アサイン（グループID復旧版）
+        // ==========================================
+        let remainingQty = qty; // 配置を処理していない残りの注文数
+        let currentSlot = getCurrentSlotIndex(); // 受付時点の時間枠
+        let finalStartSlot = -1; // 最終的にアサインを確定させる開始枠
+        let isDividedMode = false; // 分割処理を行うかどうかの内部フラグ
+        
+        // 【修正・復旧】：消えてしまっていた一括受注グループIDの発番定義をここに正しく追加します
+        const thisGroupUniqueId = nextGroupId++;
+
+        // --- 【ステップ1：条件に合致する枠を探索】 ---
+        for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
+          const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+          const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
+
+          if (slotRemainingCap <= 0) continue; 
+
+          // 受注を丸ごと入れられる枠が見つかるまで枠を移動
+          if (remainingQty <= slotRemainingCap) {
+            finalStartSlot = s;
+            isDividedMode = false;
+            break; 
+          }
+
+          // 空っぽの枠に行き着いて、かつ受注が分割なしで入れられないなら
+          if (currentOrdersSum === 0) {
+            let tempRemaining = remainingQty;
+            let isContinuousPossible = true;
+
+            for (let checkSlot = s; checkSlot < TOTAL_SLOTS && tempRemaining > 0; checkSlot++) {
+              const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
+              const testRemainingCap = Math.max(0, hourlyCapacities[checkSlot] - testOrdersSum);
+
+              if (testRemainingCap <= 0 || (checkSlot > s && testOrdersSum > 0)) {
+                isContinuousPossible = false;
+                break;
               }
-    
-              // ・もし空っぽの枠に行き着いて、かつ受注が分割なしで入れられないなら
-              if (currentOrdersSum === 0) {
-                let tempRemaining = remainingQty;
-                let isContinuousPossible = true;
-    
-                for (let checkSlot = s; checkSlot < TOTAL_SLOTS && tempRemaining > 0; checkSlot++) {
-                  const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
-                  const testRemainingCap = Math.max(0, hourlyCapacities[checkSlot] - testOrdersSum);
-    
-                  // 分割した受注は、必ず隣り合う時間枠に入るようにする
-                  if (testRemainingCap <= 0 || (checkSlot > s && testOrdersSum > 0)) {
-                    isContinuousPossible = false;
-                    break;
-                  }
-                  let take = Math.min(tempRemaining, testRemainingCap);
-                  tempRemaining -= take;
-                }
-    
-                // ・もし最初の空枠から連続して分割して収まるなら合格
-                if (isContinuousPossible && tempRemaining === 0) {
-                  finalStartSlot = s;
-                  isDividedMode = true;
-                  break;
-                }
-                
-                // ・ダメなら次の空枠を探して隣り合う時間枠に入るように分割されるまで試行
-              }
+              let take = Math.min(tempRemaining, testRemainingCap);
+              tempRemaining -= take;
             }
-    
-            // 正式アサイン処理
-            if (finalStartSlot !== -1) {
-              for (let s = finalStartSlot; s < TOTAL_SLOTS && remainingQty > 0; s++) {
-                const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
-                const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
-    
-                if (slotRemainingCap <= 0) continue;
-    
-                let takeQty = !isDividedMode ? remainingQty : Math.min(remainingQty, slotRemainingCap);
-    
-                allOrders.push({
-                  id: nextOrderNumber++,
-                  groupUniqueId: thisGroupUniqueId,
-                  quantity: takeQty,
-                  memo: remainingQty === qty ? memo : memo + ` (分割数: ${takeQty}舟)`,
-                  status: 'active',
-                  assignedHour: s
-                });
-    
-                remainingQty -= takeQty; 
-              }
+
+            // 最初の空枠から連続して分割して収まるなら合格
+            if (isContinuousPossible && tempRemaining === 0) {
+              finalStartSlot = s;
+              isDividedMode = true;
+              break;
             }
-    
-            // ・最後の枠まで入れられなかったらエラーを出す
-            if (remainingQty > 0 || finalStartSlot === -1) {
-              alert(`【生産上限エラー】受注を分断させずにまとめて焼ける、連続した「空き時間枠」が本日中に確保できません。\n各時間枠の生産可能数を増やすか、既存の注文を整理してください。`);
+          }
+        }
+
+        // --- 【ステップ2：正式アサイン処理＆メモ欄への分割元番号の自動付与】 ---
+        if (finalStartSlot !== -1) {
+          // この一括受注で一番最初に発番される注文番号（＝分割元の親番号）を事前に割り出します
+          const parentOrderNumberFormatted = String(nextOrderNumber).padStart(3, '0');
+
+          for (let s = finalStartSlot; s < TOTAL_SLOTS && remainingQty > 0; s++) {
+            const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+            const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
+
+            if (slotRemainingCap <= 0) continue;
+
+            let takeQty = !isDividedMode ? remainingQty : Math.min(remainingQty, slotRemainingCap);
+
+            // メモ欄の文字列を構築
+            let finalMemo = memo;
+            if (isDividedMode) {
+              // 分割が発生した場合、すべてのカード（先頭のカードも含めて）に「分割元：#XXX」を付与します
+              const suffix = `分割元：#${parentOrderNumberFormatted}`;
+              finalMemo = finalMemo === "" ? suffix : finalMemo + " " + suffix;
             }
-    
-          } else {
+
+            allOrders.push({
+              id: nextOrderNumber++,
+              groupUniqueId: thisGroupUniqueId, // 識別キーがこれで正しく注入されます
+              quantity: takeQty,
+              memo: finalMemo,
+              status: 'active',
+              assignedHour: s
+            });
+
+            remainingQty -= takeQty; 
+          }
+        }
+
+        // 最後の枠まで入れられなかったらエラーを出す
+        if (remainingQty > 0 || finalStartSlot === -1) {
+          alert(`【生産上限エラー】受注を分断させずにまとめて焼ける、連続した「空き時間枠」が本日中に確保できません。\n各時間枠の生産可能数を増やすか、既存の注文を整理してください。`);
+        }
+
+      } else {
+
+
             const order = allOrders.find(o => o.id === parseInt(editId, 10));
             if (order) {
               order.quantity = qty;
