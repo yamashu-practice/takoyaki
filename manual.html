@@ -6,7 +6,7 @@
   <title>たこ焼き受注管理システム - 取扱説明書・仕様書</title>
   <style>
     /* ===================================================
-       全体デザイン設定（老眼・シニア向けに文字を20pxに拡大）
+       全体デザイン設定（老眼・シニア向けに文字サイズを20pxに拡大）
        =================================================== */
     body { 
       font-family: sans-serif; 
@@ -15,15 +15,15 @@
       margin: 0; 
       padding: 0; 
       background: #fdfdfd; 
-      font-size: 20px; /* 基本文字を大きく */
+      font-size: 20px; 
     }
     .container { 
       max-width: 950px; 
       margin: 40px auto; 
       padding: 0 20px; 
+      margin-bottom: 80px;
     }
     
-    /* ヘッダー・ナビゲーション */
     header { 
       border-bottom: 4px solid #d32f2f; 
       padding-bottom: 20px; 
@@ -32,7 +32,7 @@
     h1 { 
       color: #d32f2f; 
       margin: 0 0 10px 0; 
-      font-size: 36px; /* タイトルを大きく */
+      font-size: 36px; 
     }
     .subtitle { 
       color: #555; 
@@ -41,7 +41,6 @@
       font-weight: bold;
     }
     
-    /* 見出しスタイル */
     h2 { 
       color: #d32f2f; 
       border-left: 6px solid #d32f2f; 
@@ -59,16 +58,12 @@
       padding-bottom: 5px;
     }
     
-    /* 箇条書き・テーブル */
     ul, ol { 
       padding-left: 25px; 
       margin-bottom: 25px; 
     }
     li { 
       margin-bottom: 12px; 
-    }
-    strong {
-      color: #000;
     }
     table { 
       width: 100%; 
@@ -89,7 +84,6 @@
       font-size: 20px;
     }
     
-    /* ハイライト表現 */
     code { 
       background: #f5f5f5; 
       padding: 3px 8px; 
@@ -101,18 +95,17 @@
     }
     .badge { 
       display: inline-block; 
-      padding: 6px 12px; 
+      padding: 6px 14px; 
       border-radius: 6px; 
-      font-size: 16px; 
+      font-size: 18px; 
       font-weight: bold; 
       color: #fff; 
     }
-    .badge-red { background: #d32f2f; }
+    .badge-red { background: #e53935; }
     .badge-blue { background: #0288d1; }
     .badge-green { background: #2e7d32; }
     .badge-yellow { background: #fbc02d; color: #333; }
     
-    /* 重要・新仕様の特記ボックス */
     .update-box {
       background-color: #fff3cd;
       border: 2px solid #ffeeba;
@@ -128,19 +121,18 @@
     }
     
     /* ===================================================
-       画像用モックアップ（CSSによる擬似画面キャプチャ）
+       操作説明用・高精細画面キャプチャモックアップ
        =================================================== */
     .image-mockup { 
       background: #f0f4f8; 
       border: 2px dashed #b0bec5; 
       border-radius: 8px; 
       padding: 25px; 
-      margin: 30px 0; 
+      margin: 35px 0; 
       text-align: center; 
-      position: relative; 
     }
     .image-mockup::before { 
-      content: "📷 画面イメージ（大文字・巨大ボタン化対応）"; 
+      content: "📷 画面操作イメージ（実際のUIを再現）"; 
       display: block; 
       font-weight: bold; 
       color: #546e7a; 
@@ -148,31 +140,30 @@
       font-size: 16px; 
     }
     .mock-ui { 
-      background: white; 
+      background: #f9f9f9; 
       border: 1px solid #ccc; 
-      border-radius: 6px; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
-      padding: 20px; 
+      border-radius: 8px; 
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1); 
+      padding: 15px; 
       text-align: left; 
-      max-width: 550px; 
+      max-width: 480px; 
       margin: 0 auto; 
-      font-size: 18px; 
     }
     .image-caption { 
       font-size: 16px; 
-      color: #555; 
+      color: #444; 
       margin-top: 12px; 
       text-align: center; 
       font-style: italic; 
       font-weight: bold;
     }
-    
-    /* 印刷時の設定 */
+
+    /* 印刷時の用紙最適化 */
     @media print {
-      body { background: white; background-color: transparent; font-size: 16px; }
+      body { background: white; font-size: 16px; }
       .container { max-width: 100%; margin: 0; padding: 0; }
       h2 { page-break-before: always; }
-      .image-mockup { border: 1px solid #aaa; background: none; }
+      .image-mockup { border: 1px solid #aaa; background: none; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -180,7 +171,7 @@
   <div class="container">
     <header>
       <h1>🐙 たこ焼き受注管理システム</h1>
-      <p class="subtitle">システム仕様書 兼 ユーザー操作ガイド (改訂版: 大量受注自動分割・誤操作防止機能 対応)</p>
+      <p class="subtitle">システム仕様書 兼 現場操作ガイド (最新版：連続空枠アサイン＆分割元紐付け 対応)</p>
     </header>
 
     <!-- 目次 -->
@@ -188,7 +179,7 @@
       <h2>目次</h2>
       <ol>
         <li><a href="#overview">システム概要</a></li>
-        <li><a href="#user-guide">ユーザー操作ガイド（現場向け）</a></li>
+        <li><a href="#user-guide">ユーザー操作ガイド（現場スタッフ向け）</a></li>
         <li><a href="#specifications">システム基本仕様書（開発・保守向け）</a></li>
         <li><a href="#troubleshooting">トラブルシューティング</a></li>
       </ol>
@@ -198,142 +189,138 @@
     <section id="overview">
       <h2>1. システム概要</h2>
       <p>本システムは、店舗におけるたこ焼きの注文（受注）を、焼き手の生産能力（キャパシティ）に合わせて時間枠へ自動的に割り振る<strong>「現場特化型スケジュール管理ツール」</strong>です。</p>
-      <p>ピーク時の注文あふれや焼き遅れを防ぎ、お客様へのスムーズな提供時間を確約することを目的として設計されています。今回の改訂により、現場の高齢化に伴う「文字の視認性向上」および「誤操作の完全防止」を徹底しました。</p>
+      <p>今回の改訂により、上部エリアの極限までの省スペース化、ボタンの文字だけ表記への変更、さらに「大口注文がバラバラに飛び飛び（隔離）になるのを永久に防止する連続枠確保ロジック」を搭載し、より現場で間違いの起きないユニバーサルデザインへと進化しました。</p>
     </section>
 
     <!-- 2. ユーザー操作ガイド -->
     <section id="user-guide">
       <h2>2. ユーザー操作ガイド</h2>
       
-      <h3>① 画面の構成</h3>
-      <p>画面は大きく分けて「最上部の集計バー」「中央の操作パネル」「メインの時間割テーブル」の3つで構成されています。文字・ボタンが大きく、離れた場所からでもハッキリと見えます。</p>
+      <h3>① 画面の最新構成</h3>
+      <p>操作性の向上と、時間割テーブルを広く映し出すためにレイアウトを変更しました。</p>
       <ul>
-        <li><strong>集計バー:</strong> 本日の総生産可能枠、現在の総受注数、提供済みの数、残りの必要生産数が一目で分かります。</li>
-        <li><strong>時間割テーブル:</strong> <code>11:00</code> から <code>20:00</code> まで、15分ごとに区切られた全37マスの枠が表示されます。スクロールしても、操作パネルとテーブルのタイトル行は最上部にくっついて固定されます。</li>
+        <li><strong>画面最上部（固定）：</strong> 売上状況が一目でわかる「青い集計バー」の右端に、最も重要な <span class="badge badge-green" style="font-size:16px; padding:4px 10px;">新規受注入力</span> ボタンを一体化させて配置しました。これにより、スクリーンの縦幅を大きく節約しています。</li>
+        <li><strong>画面中央（メイン）：</strong> 15分刻みの時間割テーブルです。スクロールしても赤いタイトル行と集計バーが最上部にきれいに固定されます。</li>
+        <li><strong>画面最下部（通常配置）：</strong> 普段触らない「本番/テスト切り替え」「時計」「取扱説明書」「リセット」はページの一番最後までスクロールしたときだけ現れるようにし、調理中の押し間違いを防ぎます。</li>
       </ul>
+
+      <div class="image-mockup">
+        <div class="mock-ui">
+          <div style="background:#e3f2fd; border:1px solid #90caf9; padding:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:bold; color:#0d47a1;">
+            <div>全体上限: 370舟 &nbsp; 総受注: 0舟 &nbsp; 提供済: 0舟</div>
+            <button style="background:#2e7d32; color:white; border:none; padding:8px 16px; font-size:16px; font-weight:bold; border-radius:4px;">新規受注入力</button>
+          </div>
+          <table style="width:100%; margin-top:10px; font-size:14px; box-shadow:none; border:1px solid #ddd;">
+            <tr style="background:#d32f2f; color:white; font-weight:bold;"><td style="padding:6px; text-align:center; width:60px;">時間</td><td style="padding:6px; text-align:center; width:100px;">生産可能数</td><td style="padding:6px;">現在の受注状況</td></tr>
+            <tr style="background:#fff9c4;"><td style="padding:10px; text-align:center; font-weight:bold; background:#f1f3f5;">11:00</td><td style="padding:10px; text-align:center;"><input type="text" value="10" style="width:25px; text-align:center;" disabled> <button style="font-size:12px; padding:2px 4px;">確定</button><div style="font-size:11px; color:#555; margin-top:4px;">受付可: 10舟</div></td><td style="padding:10px; color:#aaa; font-style:italic;">受注なし</td></tr>
+          </table>
+        </div>
+        <p class="image-caption">図1：画面最上部の統合レイアウト。集計バーの中に大きな受注ボタンが収まっています。</p>
+      </div>
 
       <h3>② 新しい注文（受注）を入力する</h3>
       <ol>
-        <li>画面左上の <span class="badge badge-green">＋ 新規受注入力</span> ボタンを押します。</li>
-        <li>ポップアップ画面（モーダル）が表示されます。入力欄や文字も大きく設計されています。</li>
-        <li><strong>数量:</strong> 注文された舟数を入力します（全角数字で「３」と打っても自動で半角に直ります）。</li>
-        <li><strong>味付け・メモ:</strong> 「ソースマヨ」「ねぎ塩」などのカスタム情報を入力します。</li>
-        <li><span class="badge badge-green">OK</span> を押すと、システムが自動配置を行います。</li>
+        <li>集計バーの右端にある緑色の <strong>[新規受注入力]</strong> ボタンを押します。</li>
+        <li>ポップアップ画面で「数量（舟数）」と「味付けなどのメモ」を大きく入力できます。</li>
+        <li><span class="badge badge-green" style="font-size:14px; padding:3px 8px;">OK</span> を押すと、システムが自動で最適な枠へ配置します。</li>
       </ol>
 
       <div class="update-box">
-        <h4>💡 大量受注（キャパ超え）時の自動分割機能</h4>
-        <p>焼き手の限界（1枠あたり初期値10舟）を超える大量注文（例: 30舟）が入った場合、システムが<strong>「10舟、10舟、10舟」のように、生産上限に合わせて自動的に小分けに分解し、次の空いている時間枠へと順番に繰り下げて配置</strong>します。これにより、注文カードが最後の枠へと強制ワープするバグを防ぎ、リアルな焼きスケジュールが組まれます。</p>
+        <h4>💡 【重要仕様】塊キープ ＆ 連続空枠アサインルール</h4>
+        <p>注文が入ると、システムはまず「カードを分解せずに1枚のまま丸ごと収まる枠」を未来に向かって探します（中途半端な隙間は無視します）。</p>
+        <p>もし1枠の上限（10舟など）を超える巨大な注文（例: 15舟）が来た場合は、<strong>最初に見つかった「完全に真っ新な空っぽの枠」を起点とし、お隣同士の連続した時間枠（例: 12:15枠に10舟、12:30枠に5舟）へまとめて配置</strong>します。同じお客様の注文が過去と未来にバラバラに飛び飛びになることは絶対にありません。</p>
       </div>
 
-      <div class="image-mockup">
-        <div class="mock-ui" style="border-top: 5px solid #2e7d32;">
-          <strong style="font-size: 20px;">🐙 新規受注入力</strong><hr style="border: 0; border-top: 1px solid #eee; margin: 10px 0;">
-          <label style="font-weight:bold; display:block; margin-bottom:5px;">数量（必須・舟数）</label>
-          <input type="text" value="30" style="width:95%; padding:10px; font-size:20px; margin-bottom:10px;" disabled>
-          <label style="font-weight:bold; display:block; margin-bottom:5px;">味付け・メモ（任意）</label>
-          <input type="text" value="大量注文の予約" style="width:95%; padding:10px; font-size:20px; margin-bottom:15px;" disabled>
-          <div style="text-align:right;">
-            <span class="badge" style="background:#e0e0e0; color:#333; padding:10px 20px;">キャンセル</span>
-            <span class="badge badge-green" style="padding:10px 20px;">OK</span>
-          </div>
-        </div>
-        <p class="image-caption">図1：新規受注入力画面。文字が大きくタイピングしやすくなっています。</p>
-      </div>
-
-      <h3>③ 注文のステータスを管理する（提供・変更・削除）</h3>
-      <p>時間割テーブルの右側に並ぶ「黄色いカード」が未提供の注文です。ボタン同士の隙間が広いため、押し間違いがありません。</p>
-      
       <div class="update-box">
-        <h4>⚠️ 誤操作防止の確認ダイアログ（ポップアップ）</h4>
-        <p>現場でのタップミスを防ぐため、カード内の<strong>「提供済にする」または「未済に戻す」ボタンを押した際にも、削除時と同様に画面に「〜してもよろしいですか？」という確認画面が必ず表示される安全仕様</strong>になりました。「キャンセル」を押せば元の状態をキープできます。</p>
+        <h4>🔗 【新機能】分割元の親番号（#003など）の自動追記</h4>
+        <p>大口注文が複数枠に分割された場合、生成された全てのカードのメモ欄の末尾に、一番最初の親番号が<strong>「分割元：#003」</strong>のように全自動で追記されます。メモ（例:「ねぎ塩」）が元々書かれていた場合は、その後ろに綺麗に付け足されます。</p>
       </div>
 
-      <ul>
-        <li><strong>提供済みにする:</strong> たこ焼きをお客様に渡したらカード内のボタンを押します。確認後にカードが緑色に変化し、その時間枠にデータが<strong>固定ロック</strong>されます。</li>
-        <li><strong>変更:</strong> 数量や味付けの変更は、ボタンからいつでも上書き修正できます。</li>
-        <li><strong>削除（キャンセル）:</strong> 注文の取り消しは <span class="badge badge-red" style="font-size:14px;">削除</span> を押します。確認後に削除され、後ろに控えていた注文カードが自動的に前に詰まります。</li>
-      </ul>
-
       <div class="image-mockup">
-        <div class="mock-ui" style="max-width: 450px;">
-          <div style="background: #fffde7; border: 2px solid #fbc02d; padding: 15px; border-radius:6px;">
-            <strong style="font-size:22px;">注文番号 #001</strong>: 10 舟 [<span style="color:#d32f2f; font-weight:bold;">未提供</span>]
-            <div style="background:rgba(0,0,0,0.05); font-size:18px; padding:6px; margin:8px 0; font-weight:bold;">📝 ソースマヨ (分割数: 10舟)</div>
-            <div style="margin-top:10px; display:flex; gap:8px;">
-              <button style="font-size:16px; padding:8px 12px; flex:1; font-weight:bold;">変更</button>
-              <button style="font-size:16px; padding:8px 12px; flex:2; background:#2e7d32; color:white; border:none; border-radius:3px; font-weight:bold;">提供済にする</button>
-              <button style="font-size:16px; padding:8px 12px; flex:1; background:#e53935; color:white; border:none; border-radius:3px; font-weight:bold;">削除</button>
+        <div class="mock-ui" style="max-width: 420px;">
+          <div style="background: #fffde7; border: 2px solid #fbc02d; padding: 12px; border-radius:6px; font-size:16px;">
+            <strong>#003 (10舟)</strong>
+            <div style="background:rgba(0,0,0,0.05); font-size:15px; padding:6px; margin:6px 0; font-weight:bold; border:1px solid #ddd; border-radius:4px;">ねぎ塩 分割元：#003</div>
+            <div style="margin-top:10px; display:flex; gap:6px;">
+              <button style="font-size:14px; padding:6px; flex:1; background:#4caf50; color:white; border:none; border-radius:4px; font-weight:bold;">提供済</button>
+              <button style="font-size:14px; padding:6px; flex:1; background:#ff9800; color:white; border:none; border-radius:4px; font-weight:bold;">変更</button>
+              <button style="font-size:14px; padding:6px; flex:1; background:#e53935; color:white; border:none; border-radius:4px; font-weight:bold;">削除</button>
+            </div>
+          </div>
+          <div style="background: #fffde7; border: 2px solid #fbc02d; padding: 12px; border-radius:6px; font-size:16px; margin-top:10px;">
+            <strong>#004 (5舟)</strong>
+            <div style="background:rgba(0,0,0,0.05); font-size:15px; padding:6px; margin:6px 0; font-weight:bold; border:1px solid #ddd; border-radius:4px;">ねぎ塩 分割元：#003</div>
+            <div style="margin-top:10px; display:flex; gap:6px;">
+              <button style="font-size:14px; padding:6px; flex:1; background:#4caf50; color:white; border:none; border-radius:4px; font-weight:bold;">提供済</button>
+              <button style="font-size:14px; padding:6px; flex:1; background:#ff9800; color:white; border:none; border-radius:4px; font-weight:bold;">変更</button>
+              <button style="font-size:14px; padding:6px; flex:1; background:#e53935; color:white; border:none; border-radius:4px; font-weight:bold;">削除</button>
             </div>
           </div>
         </div>
-        <p class="image-caption">図2：時間割内の受注カード。大きく押しやすい等幅ボタン配置です。</p>
+        <p class="image-caption">図2：15舟の注文が#003と#004に分割された例。双方のメモに「分割元：#003」がはっきりと印字され、お隣同士の枠に並びます。</p>
       </div>
 
-      <h3>④ 各時間枠の「生産可能数（キャパ）」を変更する</h3>
-      <p>仕込みの状況や人員の増減に合わせて、15分間に焼ける最大舟数を枠ごとに変更できます。</p>
-      <ol>
-        <li>変更したい時間枠の「生産可能数」列にある大きな入力欄の数値を書き換えます（例：<code>10</code> → <code>15</code>）。</li>
-        <li>横にある青い <span class="badge badge-blue">確定</span> ボタンを押します。</li>
-        <li>キャパを増やすと、後ろの時間に溢れていた注文が自動的にその枠へ滑り込みます。</li>
-      </ol>
-
-      <h3>⑤ 環境モードの使い分け（本番とテスト）</h3>
+      <h3>③ 注文カードのステータス管理（文字だけ表記に変更）</h3>
+      <p>誤操作と押し間違いを防ぐため、ボタンの「✓」や「❌」といった絵文字を完全に廃止し、大きな日本語テキストのみに統一しました。ボタンを押した際は必ず「〜してもよろしいですか？」と確認画面が出ます。</p>
       <ul>
-        <li><strong>🟢 本番モード（通常運用）:</strong> パソコンやタブレットの内蔵時計と完全に連動します。現在時刻より前の過去の枠には、新規注文が入らないよう安全ガードが働きます。現在の時刻の行が自動で<strong>黄色くハイライト</strong>されます。</li>
-        <li><strong>🟡 テストモード（練習・事前シミュレーション）:</strong> 時計の連動を切り離します。現在時刻を手動で変更できるため、大量受注が重なった時のシミュレーションや、新人の打ち込み練習に活用できます。</li>
+        <li><strong>[提供済] を押す：</strong> お客様へお渡し完了。確認ダイアログでOKを押すと、カードが緑色に変わり、その時間枠に配置が<strong>完全ロック（固定）</strong>されます。</li>
+        <li><strong>[変更] を押す：</strong> 数量や味付けメモをいつでも変更できます。内部のグループ番号（ID）で管理しているため、**ここでメモを自由に書き換えても、分割されたお隣同士の連動関係が壊れることは絶対にありません。**</li>
+        <li><strong>[削除] を押す：</strong> 注文のキャンセル。確認後にデータが消去され、残りの未提供カードが自動計算で前に詰まります。</li>
       </ul>
+
+      <div class="image-mockup">
+        <div class="mock-ui" style="max-width:350px; text-align:center; background:white; border:1px solid #aaa; padding:20px;">
+          <div style="font-size:18px; font-weight:bold; margin-bottom:15px;">注文 #003（10舟）を「提供済」にしてもよろしいですか？</div>
+          <button style="padding:8px 20px; font-size:16px; margin-right:10px; background:#e0e0e0; border:none; border-radius:4px;">キャンセル</button>
+          <button style="padding:8px 20px; font-size:16px; background:#2e7d32; color:white; border:none; border-radius:4px; font-weight:bold;">OK</button>
+        </div>
+        <p class="image-caption">図3：操作時に必ず表示される安心の確認ポップアップ画面。</p>
+      </div>
+
+      <h3>④ 受付可能数のリアルタイム確認</h3>
+      <p>各枠の「確定」ボタンの下には、その15分間で**「あと何舟注文を受けられるか」**がリアルタイムに表示されます。
+      上限に達して空き枠が「0」になると、明るい赤色の背景で <span class="status-full" style="font-size:14px; padding:2px 6px;">満</span> とハッキリ表示されます。これを見ながら「次の11:30の枠ならまだ焼けます！」などとお客様へスムーズに案内できます。</p>
     </section>
 
     <!-- 3. システム基本仕様書 -->
     <section id="specifications">
-      <h2>3. システム基本仕様書</h2>
+      <h2>3. システム基本仕様書（開発・保守向け）</h2>
       
-      <h3>② 時間割定義スロット</h3>
-      <ul>
-        <li><strong>管理枠:</strong> <code>11:00</code> から <code>20:00</code> までの15分刻み。</li>
-        <li><strong>総スロット数:</strong> <code>37スロット</code>（内部インデックス：<code>0</code> ～ <code>36</code>）</li>
-        <li><strong>初期キャパシティ:</strong> 全スロット一律でデフォルト <code>10 舟</code>。</li>
-      </ul>
+      <h3>① 隠し識別キー `groupUniqueId` による動的グループ連動システム</h3>
+      <p>一度に登録された一括受注（分割された注文）には、画面に表示されない内部キー <code>groupUniqueId</code> が同一発番されて付与されます。</p>
+      <p>描画エンジン <code>renderTable()</code> が実行される際、このキーを元にグループを自動的に束ね直し、**「手前の時間枠の注文が削除されて隙間が空いたとしても、分割されたカードが片方だけその隙間に吸い込まれる現象（飛び飛びバグ）」を完全に遮断**します。グループ全員が同時にお隣同士のまま引っ越しできる連続空枠を再計算して移動します。</p>
 
-      <h3>③ 自動アサインアルゴリズム（前詰め・自動分割ロジック）</h3>
-      <p>データが変更（追加・編集・削除・キャパ変更）されるたび、内部関数 <code>renderTable()</code> が再計算を実行します。</p>
+      <h3>② アルゴリズム仕様（探索ステップ）</h3>
       <ol>
-        <li><strong>既提供枠の固定:</strong> <code>status: 'served'</code>（提供済）のデータを最優先でスキャンし、指定された時間枠のキャパを事前に消費させ、配置を完全固定します。</li>
-        <li><strong>新規受注の自動分割投入:</strong> 受注が入力された瞬間、その時間枠から最終枠（20:00）にかけて空きキャパを順に探索します。1枠の上限を超える注文数がある場合は、上限値に合わせてデータを自動で小分け（分割）にしながら空き枠を埋めていき、マスターリスト（<code>allOrders</code>）へ直接格納します。</li>
-        <li><strong>未提供枠の巡回詰め:</strong> 分割されて登録された <code>status: 'active'</code>（未提供）のデータを、注文番号（ID）の若い順にソートし、現在時刻から営業終了（20:00）の枠に向けて前詰め探索アサインをかけます。</li>
-        <li><strong>最終あふれ処理:</strong> 当日の営業終了時間の枠まで全ての生産可能数を使い切っても、まだ入りきらなかった注文数が残った場合、登録をキャンセルして画面に「生産上限エラー」の警告文（<code>alert</code>）を表示し、データのパンクを防ぎます。</li>
+        <li><strong>served（提供済）の最優先固定：</strong> <code>status: 'served'</code> の注文を各枠に完全ロックし、キャパシティを事前に消費させます。</li>
+        <li><strong>丸ごと収まる枠の探索：</strong> 注文が入ると、グループの総数量がそのまま入る残りキャパがあるか未来へスキャンします。</li>
+        <li><strong>真っ新な連続空枠テスト：</strong> 1枠で収まらない場合、最初に出会う「未提供注文が1舟もない完全に真っ新な空枠（キャパ10）」を起点とし、そこから営業終了（20:00）の枠に向かって、お隣同士の連続した枠だけで数量がすべて収まるかを事前テストします。</li>
+        <li><strong>データの安全引き算：</strong> テストをクリアした連続時間枠の開始位置から、各枠の上限値（キャパ）に合わせてカードを小分けにし、<code>remainingQty</code> から確実に引き算をしながらマスター配列へプッシュします。<code>continue</code> によるデータの置き去り（消失）が起きない2ステップ構造です。</li>
       </ol>
 
-      <h3>④ データ構造（JSONスキーマ）</h3>
-      <p><code>localStorage</code> に保存されるオブジェクトの構造（不変）です。</p>
-<pre><code>{
-  "nextOrderNumber": 5,
-  "envMode": "production",
-  "hourlyCapacities": [10, 10, 12, 12, ... 37要素],
-  "allOrders": [
-    {
-      "id": 1,
-      "quantity": 10,
-      "memo": "ネギマヨ (分割数: 10舟)",
-      "status": "served",
-      "assignedHour": 0
-    }
-  ]
-}</code></pre>
+      <div class="image-mockup">
+<pre style="text-align:left; font-size:14px; background:#fafafa; padding:10px; border:1px solid #ddd; overflow-x:auto; margin:0;">
+{
+  "id": 3,
+  "groupUniqueId": 1, 
+  "quantity": 10,
+  "memo": "ねぎ塩 分割元：#003",
+  "status": "active",
+  "assignedHour": 2
+}</pre>
+        <p class="image-caption">図4：内部のデータ構造（JSON）。画面には映らない「groupUniqueId」でグループを鉄壁の結束で管理しています。</p>
+      </div>
     </section>
 
     <!-- 4. トラブルシューティング -->
     <section id="troubleshooting">
       <h2>4. トラブルシューティング</h2>
-      <h3>Q. ボタンをタップしたのに何も起きない・ダイアログが出ない</h3>
-      <p><strong>A.</strong> 「提供済にする」「未済に戻す」ボタンを押すと、画面上部や中央に確認ポップアップが出現します。これが表示されている間は他の操作ができません。必ず「OK」または「キャンセル」のどちらかを押して閉じてください。</p>
+      <h3>Q. テストモードで仮想時間を変更しても、なぜか最後の20:00枠に注文が入ってしまう</h3>
+      <p><strong>A.</strong> 環境モードを切り替えた直後、ドロップダウンの時間（hh:mm）と、内部プログラムの変数が一時的にズレていた旧仕様のバグは、最新版の <code>changeEnvMode()</code> 関数への強制同期処理の追加によって**完全に修正されています。**
+      ドロップダウンの仮想時間を変更すると、該当する時間枠の行が黄色くハイライトされ、その時間から正確にアサインが開始されます。万が一発生する場合は、最新のスクリプト（パート②）が正しくHTMLに貼り付けられているか再確認してください。</p>
 
-      <h3>Q. 「生産上限エラー」と怒られて登録ができない</h3>
-      <p><strong>A.</strong> 本日の営業終了（20:00枠）までの全ての焼き枠キャパシティを使い切ってパンクした状態です。各枠の「生産可能数」を増やすか、既存の注文を削除して枠を空けてから再度受注を登録してください。</p>
-
-      <h3>Q. 日付が変わったので、前日のデータを真っさらにしたい</h3>
-      <p><strong>A.</strong> 画面右上の <span class="badge" style="background:#757575;">データをすべてリセット</span> ボタンを押してください。確認後に注文番号が<code>1</code>にリセットされ、すべてのマスが初期状態（キャパ10）に戻ります。</p>
+      <h3>Q. 「連続した空き時間枠が確保できません」とエラーが出る</h3>
+      <p><strong>A.</strong> 大口注文（例：15舟や20舟）が入った際、お隣同士の連続した綺麗な空き枠が2枠以上確保できなかった場合に表示される安全装置です。どこか空いているマスの「生産可能数」の数値を大きくして <span class="badge badge-blue" style="font-size:14px; padding:2px 6px;">確定</span> を押すか、既存の注文を整理して「連続した空き時間」を作ってから再度入力してください。</p>
     </section>
   </div>
 </body>
