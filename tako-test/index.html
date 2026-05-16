@@ -5,19 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>たこ焼き時間割・受注状況管理カウンター</title>
-
     <style>
-        /* ========================================================
-       1. 全体・基本設定（シニア・老眼向けに文字サイズを20pxに拡大）
-       ======================================================== */
+        /* ==========================================================================
+   1. 全体・基本設定（シニア・現場作業向け視認性強化）
+   ========================================================================== */
         body {
             font-family: sans-serif;
             margin: 20px;
             margin-bottom: 20px;
-            /* 通常配置のフッターに合わせた自然な余白 */
+            /* フッター配置に合わせた下部余白 */
             background: #f9f9f9;
             font-size: 20px;
-            /* 基本文字を大きく */
+            /* タブレット・現場で見やすいよう基本文字サイズを拡大 */
         }
 
         h1 {
@@ -29,11 +28,10 @@
             /* タイトルを巨大化 */
         }
 
-        /* ========================================================
-       2. 画面上部へのエリア完全固定（追従レイアウト・省スペース版）
-       ======================================================== */
-        /* 集計ボックス＋新規受注ボタン、そしてテーブルタイトル（th）までを
-       一体化して画面最上部に完全固定するためのコンテナ */
+        /* ==========================================================================
+   2-A. 画面上部エリア（スクロール追従・固定レイアウト）
+   ========================================================================== */
+        /* 売上集計と新規ボタン、テーブルヘッダー(th)までを最上部に固定するコンテナ */
         .fixed-header-area {
             position: sticky;
             top: 0;
@@ -47,61 +45,58 @@
             flex-direction: column;
         }
 
-        /* 最上部に配置された売上・受注リアルタイム集計ボックス
-       【新仕様】: 新規受注ボタンを右端に美しく同居させるため横並びに変更 */
+        /* リアルタイム集計情報と新規受注ボタンを横並びにするボックス */
         .summary-box {
             background: #e3f2fd;
             border: 1px solid #90caf9;
             padding: 12px 20px;
-            /* 縦のパディングを少し絞って省スペース化 */
+            /* 縦の余白を絞って省スペース化 */
             border-radius: 8px;
             margin-bottom: 10px;
-            /* テーブルヘッダーとの適切な隙間 */
+            /* スケジュール表との隙間 */
             display: flex;
             justify-content: space-between;
-            /* 左側に数字、右側にボタンを配置 */
+            /* 左側に数字、右側に新規ボタン */
             align-items: center;
-            /* 縦方向を中央揃えに */
             font-size: 22px;
             font-weight: bold;
             color: #0d47a1;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        /* 集計テキスト部分を包むコンテナ */
+        /* 集計テキスト項目を並べるコンテナ */
         .summary-data-items {
             display: flex;
             gap: 30px;
         }
 
-        /* ========================================================
-       2-B. 画面最下部のコントロールエリア（スクロール時のみ出現）
-       ======================================================== */
+        /* ==========================================================================
+   2-B. 画面最下部エリア（操作環境・リセット管理）
+   ========================================================================== */
         .fixed-footer-area {
             position: relative;
             margin-top: 40px;
-            /* テーブルとの間に少し隙間を空けます */
+            /* テーブルとの間に適切な隙間を確保 */
             background: #fff;
             border: 1px solid #ced4da;
-            /* 周りを囲む枠線にしてカード風に見やすく */
             border-radius: 8px;
             padding: 15px 20px;
             display: flex;
             gap: 20px;
             align-items: center;
             flex-wrap: wrap;
+            /* 画面幅に応じて自動折り返し */
         }
 
-        /* ========================================================
-       3. メインの時間割スケジュールテーブル（表）
-       ======================================================== */
+        /* ==========================================================================
+   3. スケジュールメインテーブル（時間割表）
+   ========================================================================== */
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             background: #fff;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            position: relative;
         }
 
         th,
@@ -109,7 +104,7 @@
             border-bottom: 1px solid #ddd;
             border-right: 1px solid #ddd;
             padding: 15px 12px;
-            /* セル内の余白を広げて見やすく */
+            /* マスの中を広げて見やすく */
             text-align: left;
             vertical-align: top;
         }
@@ -119,37 +114,31 @@
             border-left: 1px solid #ddd;
         }
 
-        /* 赤いタイトル行（テーブルヘッダー）の固定設定 */
+        /* テーブルヘッダー（赤いタイトル行）：上部コンテナに隙間なく吸着 */
         th {
             background: #d32f2f;
             color: white;
             font-size: 20px;
-            /* ヘッダーの文字を大きく */
-
-            /* 文字サイズ変更によってヘッダー全体の高さがどれだけ伸びても、
-         .fixed-header-area の直下に「自動で隙間なく吸着」させます */
             position: sticky;
             top: 0;
             z-index: 90;
             border-top: 1px solid #ddd;
         }
 
-        /* 左側: 時刻を表示する列（幅固定・中央寄せ） */
+        /* 左列：時刻表示（幅固定・文字強調） */
         .time-col {
             width: 110px;
-            /* 文字拡大に合わせて列幅を拡張 */
             font-weight: bold;
             font-size: 24px;
-            /* 時間枠の数字を一番大きくハッキリと */
+            /* 時間枠の数字を最もハッキリと強調 */
             text-align: center;
             vertical-align: middle;
             background: #f1f3f5;
         }
 
-        /* 中央: 生産キャパを設定・確認する列 */
+        /* 中列：生産キャパ設定・確認エリア */
         .capacity-col {
             width: 180px;
-            /* ボタン配置にゆとりを持たせる */
             text-align: center;
             vertical-align: middle;
         }
@@ -157,21 +146,21 @@
         .capacity-input {
             width: 65px;
             height: 42px;
-            /* 入力しやすいよう高さを確保 */
+            /* 指でも入力しやすい高さを確保 */
             text-align: center;
             font-size: 22px;
             /* 入力数値を大きく */
             padding: 4px;
         }
 
-        /* 残りの受注可能数を表示するエリアのスタイル設定 */
+        /* 各コマの残り枠表示 */
         .avail-capacity-display {
             margin-top: 8px;
             font-size: 18px;
             color: #555;
         }
 
-        /* 満杯（残り0）になった時の「満」赤文字デザイン */
+        /* 受注満杯（残り0）時の「満」赤文字バッジ */
         .status-full {
             color: #d32f2f;
             font-weight: bold;
@@ -183,16 +172,15 @@
             display: inline-block;
         }
 
-        /* ========================================================
-       4. 各種操作ボタンのカラーバリエーション・巨大化
-       ======================================================== */
-        /* 各マスの「確定」ボタン */
+        /* ==========================================================================
+   4. 各種操作ボタン（カラーバリエーション・巨大化設定）
+   ========================================================================== */
+        /* 各時間マスのキャパ「確定」ボタン */
         .confirm-btn {
             background: #0288d1;
             color: white;
             border: none;
             padding: 8px 14px;
-            /* 押しやすく拡大 */
             font-size: 18px;
             border-radius: 4px;
             cursor: pointer;
@@ -204,29 +192,28 @@
             background: #01579b;
         }
 
-        /* 【新仕様】: 集計バーの右側にぴったり収まる「新規受注入力」ボタン */
+        /* 集計バー右端の「新規受注入力」ボタン */
         .order-btn {
             background: #2e7d32;
             color: white;
             border: none;
             padding: 10px 30px;
-            /* 集計バーの高さに合わせたスマートな余白 */
             font-size: 22px;
-            /* 老眼でもはっきり読める大文字 */
+            /* 押し間違えない大文字 */
             font-weight: bold;
             border-radius: 6px;
             cursor: pointer;
             min-height: 50px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             white-space: nowrap;
-            /* 途中で改行されるのを防止 */
+            /* 途中の改行を防止 */
         }
 
         .order-btn:hover {
             background: #1b5e20;
         }
 
-        /* 下部:「取扱説明書を開く」ボタン */
+        /* 「取扱説明書を開く」ボタン */
         .manual-btn {
             background: #0d47a1;
             color: white;
@@ -244,7 +231,7 @@
             background: #0a377d;
         }
 
-        /* 下部:「データをすべてリセット」ボタン */
+        /* 「データをすべてリセット」ボタン */
         .reset-btn {
             background: #757575;
             color: white;
@@ -274,29 +261,27 @@
             background: #b71c1c;
         }
 
-        /* ========================================================
-       5. 注文カード（受注データ）の見栄え・ボタン誤操作防止
-       ======================================================== */
+        /* ==========================================================================
+   5. 注文カード（受注データ一覧と個別ボタン）
+   ========================================================================== */
         .order-list {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            /* カード同士の間隔を広げる */
+            /* カード同士の誤タップを防ぐ隙間 */
             margin: 0;
             padding: 0;
             list-style: none;
         }
 
-        /* 通常状態: 未提供の黄色いカード */
+        /* 通常状態：未提供（調理中）の黄色いカード */
         .order-card {
             background: #fffde7;
             border: 2px solid #fbc02d;
-            /* 輪郭をハッキリ */
+            /* 輪郭をハッキリ視認 */
             padding: 12px 15px;
-            /* カード内を広く */
             border-radius: 6px;
             font-size: 20px;
-            /* カード全体の文字サイズ */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             min-width: 180px;
             display: flex;
@@ -304,28 +289,26 @@
             justify-content: space-between;
         }
 
-        /* 注文番号と数量 */
-        .order-card strong {
-            font-size: 22px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        /* 提供完了状態: 固定ロックがかかった緑色のカード */
+        /* 提供完了状態：固定ロックされた緑色のカード */
         .order-card.served {
             background: #e8f5e9;
             border-color: #81c784;
             color: #2e7d32;
         }
 
-        /* 味付けやトッピングを記載するメモ枠 (グレー) */
+        /* 注文番号と数量タイトル */
+        .order-card strong {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* トッピングなどを記載するメモ枠 */
         .order-memo {
             background: rgba(0, 0, 0, 0.05);
             padding: 6px 8px;
-            /* 文字が読みやすいよう余白を確保 */
             border-radius: 4px;
             font-size: 18px;
-            /* メモをクッキリ表示 */
             font-weight: bold;
             margin-top: 5px;
             margin-bottom: 10px;
@@ -334,33 +317,35 @@
             border: 1px solid #ddd;
         }
 
-        /* カード内のアクションボタングループ */
+        /* カード内下部のアクションボタン配置 */
         .order-actions {
             margin-top: 5px;
             display: flex;
             gap: 8px;
-            /* ボタンが近すぎて押し間違えないよう隙間を空ける */
+            /* 押し間違えないようボタン間隔を確保 */
         }
 
         .order-actions button {
             font-size: 18px;
-            /* 文字を大きく見やすく */
             font-weight: bold;
             cursor: pointer;
             padding: 8px 12px;
-            /* 指でも確実に捉えられるサイズ */
             min-height: 45px;
-            /* 高さを確保 */
+            /* 指で確実に捉えられる高さ */
             flex: 1;
-            /* 横幅を均等に広げて押しやすく */
+            /* 横幅を均等配分 */
             border: 1px solid #ced4da;
             border-radius: 4px;
         }
 
-        /* ========================================================
-       6. インターフェース（特殊表示・ダイアログ窓）
-       ======================================================== */
-        /* 現在の時刻に該当する行を明るい黄色でハイライト */
+        /* ==========================================================================
+   6. 特殊UI要素・ポップアップ（ダイアログ窓）
+   ========================================================================== */
+        /* 現在時刻に該当する時間枠（行）のハイライト背景 */
+        .current-row {
+            background-color: #fff9c4 !important;
+        }
+
         .current-time-info {
             font-weight: bold;
             color: #333;
@@ -370,18 +355,13 @@
             font-size: 20px;
         }
 
-        .current-row {
-            background-color: #fff9c4 !important;
-        }
-
-        /* 環境切り替え (本番/テスト) のラジオボタン枠 */
+        /* 本番/テストの動作環境切り替えラジオボタン枠 */
         .env-toggle {
             background: #eceff1;
             padding: 6px 14px;
             border-radius: 20px;
             border: 1px solid #b0bec5;
             font-size: 18px;
-            /* テキストを大きく */
             display: flex;
             gap: 15px;
             align-items: center;
@@ -394,9 +374,10 @@
             gap: 6px;
         }
 
-        /* 入力用ポップアップ (モーダルダイアログ) の背面背景 */
+        /* 入力モーダルダイアログの半透明の背面マスク */
         .modal-overlay {
             display: none;
+            /* 初期状態は非表示、JSで制御 */
             position: fixed;
             top: 0;
             left: 0;
@@ -408,14 +389,13 @@
             align-items: center;
         }
 
-        /* 入力用ポップアップの本体ボックス */
+        /* 入力ポップアップの本体 */
         .modal-box {
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             width: 450px;
-            /* 入力欄拡大に合わせてボックスを横に拡張 */
             border-top: 5px solid #2e7d32;
         }
 
@@ -423,7 +403,6 @@
             margin-top: 0;
             color: #333;
             font-size: 24px;
-            /* タイトルを大文字に */
             margin-bottom: 20px;
         }
 
@@ -436,7 +415,6 @@
             font-weight: bold;
             margin-bottom: 8px;
             font-size: 20px;
-            /* ラベルを大きく */
             color: #495057;
         }
 
@@ -444,9 +422,8 @@
             width: 100%;
             box-sizing: border-box;
             padding: 12px;
-            /* 入力枠を広く */
             font-size: 22px;
-            /* タイピング中の文字を巨大化 */
+            /* 入力文字を大きく */
             border: 1px solid #ccc;
             border-radius: 4px;
         }
@@ -461,7 +438,6 @@
         .modal-buttons button {
             padding: 12px 24px;
             font-size: 20px;
-            /* モーダル内のOK・閉じるボタンを拡大 */
             font-weight: bold;
             border: none;
             border-radius: 4px;
@@ -487,16 +463,16 @@
             background: #ccc;
         }
 
-        /* ========================================================
-       7. スマートフォン縦画面時の微調整（元の構造の崩れを防ぐ最小限の設定）
-       ======================================================== */
+        /* ==========================================================================
+   7. スマートフォン縦画面（レスポンシブ微調整）
+   ========================================================================== */
         @media screen and (max-width: 768px) {
             body {
                 margin: 10px;
                 margin-bottom: 10px;
             }
 
-            /* スマホ時は、集計数字の下に新規受注ボタンが縦に並ぶように調整 */
+            /* スマホ時は集計表示の下に新規ボタンを縦に並べる */
             .summary-box {
                 flex-direction: column;
                 align-items: stretch;
@@ -548,46 +524,42 @@
 
 <body>
 
-    <!-- 
-    画面最上部に完全追従して固定されるエリア
-    【さらに省スペース化】: 新規受注ボタンを集計ボックスの内部へ完全統合しました！
-  -->
+    <!-- 固定ヘッダーエリア：売上集計・新規ボタン・見出し -->
     <div class="fixed-header-area">
         <h1>🐙 たこ焼き時間割・受注状況管理カウンター</h1>
 
-        <!-- リアルタイム集計 ＆ 新規受注入力ボタンのドッキングボックス -->
         <div class="summary-box">
-            <!-- 左側：各種売上集計データ項目 -->
+            <!-- 各種リアルタイム集計データ -->
             <div class="summary-data-items">
                 <span>全体生産上限: <span id="total-capacity-display">0</span> 舟</span>
                 <span>総受注数: <span id="total-orders-display">0</span> 舟</span>
                 <span>提供済: <span id="served-orders-display">0</span> 舟</span>
                 <span style="color:#d32f2f;">要生産数: <span id="needed-production-display">0</span> 舟</span>
             </div>
-            <!-- 右側：集計バーの高さにきれいに収まる新規受注ボタン -->
+            <!-- 新規受注入力ボタン -->
             <button class="order-btn" onclick="openOrderModal()">新規受注入力</button>
         </div>
 
-        <!-- メインデータテーブルのヘッダー行（赤色タイトルバー） -->
+        <!-- テーブルヘッダー（スクロール時も集計バーの下に固定表示） -->
         <table>
             <thead>
                 <tr>
                     <th style="width: 110px; text-align: center;">時間</th>
                     <th style="width: 180px; text-align: center;">生産可能数</th>
-                    <th>現在の受注状況（未提供：黄色カード ／ 提供完了：緑色カード）</th>
+                    <th>現在の受注状況（未提供: 黄色カード / 提供完了: 緑色カード）</th>
                 </tr>
             </thead>
         </table>
     </div>
 
-    <!-- スケジュールタイムスケジュール本体（データ行） -->
+    <!-- メインスケジュールテーブル本体（データ行） -->
     <table id="main-table-body-container">
         <tbody id="table-body">
             <!-- 内部の行（tr）は、JavaScript側から動的に全自動生成されます -->
         </tbody>
     </table>
 
-    <!-- 画面最下部のコントロールエリア（スクロールしきったときだけ出現） -->
+    <!-- 固定フッター：環境切替・時間操作・リセットボタン -->
     <div class="fixed-footer-area">
         <div class="env-toggle">
             <label><input type="radio" name="env-mode" id="env-production" checked
@@ -597,10 +569,11 @@
 
         <div class="current-time-info">
             <span id="current-time-text">本番実時刻: --:--</span>
-            <div id="test-time-control" style="display:none; align-items:center; gap:5px;">
+            <!-- テストモード時のみ出現する仮想時間選択用コントロール -->
+            <div id="test-time-control" style="display: none; align-items:center; gap:5px;">
                 <label for="virtual-time-select"
-                    style="font-size:16px; font-weight:bold; color:#7f8c8d;">[仮想時間変更]:</label>
-                <select id="virtual-time-select" style="font-size:18px; padding:3px; font-weight:bold;"
+                    style="font-size: 16px; font-weight:bold; color:#7f8c8d;">[仮想時間変更]:</label>
+                <select id="virtual-time-select" style="font-size: 18px; padding:3px; font-weight:bold;"
                     onchange="updateVirtualTime(this.value)">
                     <option value="11:00">11:00</option>
                     <option value="11:15">11:15</option>
@@ -647,16 +620,16 @@
         <button class="reset-btn" onclick="clearAllData()">データをすべてリセット</button>
     </div>
 
-    <!-- 新規受注入力および内容変更を行うポップアップダイアログ（モーダル窓） -->
+    <!-- 新規受注・内容変更入力用モーダル窓 -->
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal-box">
             <h3 id="modal-title">新規受注入力</h3>
             <div class="modal-form-group">
-                <label for="order-qty">数量 (必須・舟数)</label>
-                <input type="text" id="order-qty" inputmode="numeric" placeholder="例: 3">
+                <label for="order-qty">数量（必須・舟数）</label>
+                <input type="text" id="order-qty" inputmode="numeric" placeholder="例:3">
             </div>
             <div class="modal-form-group">
-                <label for="order-memo">名前・メモ (任意)</label>
+                <label for="order-memo">名前・メモ（任意）</label>
                 <input type="text" id="order-memo" placeholder="例: たなか様 マヨ抜き">
             </div>
             <div class="modal-buttons">
@@ -665,43 +638,37 @@
             </div>
         </div>
     </div>
-    <!-- ========================================================
-       ここから【パート②】JavaScript（スクリプト）以降の部分
-       ======================================================== -->
     <script>
-        // --- 1. 定数・グローバル変数の定義 ---
-        const TOTAL_SLOTS = 37; // 11:00〜20:00までの15分刻み全37枠
-        const SLOT_INTERVAL_MIN = 15; // 1枠の間隔（15分）
+        // ==========================================================================
+        // 1. 定数・グローバル変数の定義（アプリケーションのデータ状態管理）
+        // ==========================================================================
+        const TOTAL_SLOTS = 37;       // 11:00〜20:00までの15分刻みスケジュール全37枠
+        const SLOT_INTERVAL_MIN = 15; // 1枠の時間間隔（15分）
+        const STORAGE_KEY = 'takoyaki_management_data'; // ローカルストレージ保存用キー
 
-        // ローカルストレージ用の保存キー名
-        const STORAGE_KEY = 'takoyaki_management_data';
-
-        // アプリケーション全体の共通データ状態（マスター）
-        let nextOrderNumber = 1;      // 次に発番する注文番号
-        let nextGroupId = 1;          // 次に発番する一括受注グループID
+        let nextOrderNumber = 1;      // 次に発番する一意の注文通し番号（#001, #002...）
+        let nextGroupId = 1;          // 同時受注（一括自動分割）を束ねるグループUnique ID
         let envMode = 'production';   // 動作環境モード（'production' または 'test'）
-        let hourlyCapacities = [];    // 各スロットの生産上限数（キャパ）
-        let allOrders = [];           // 全ての注文オブジェクトを格納する配列
-        let editId = "";              // 現在編集中の注文ID（空文字なら新規登録）
+        let hourlyCapacities = [];    // 各時間枠（スロット）の生産上限数（キャパ）を保持する配列
+        let allOrders = [];           // 登録されたすべての注文オブジェクト（子カード）を格納する配列
+        let editId = "";              // 現在編集中の注文ID（空文字なら新規登録ルート）
+        let testVirtualTime = "11:00"; // テストモード時に使用するシミュレーション用の仮想現在時刻
 
-        // シミュレーション用の仮想現在時刻（テストモード時のみ使用）
-        let testVirtualTime = "11:00";
-
-        // 各時間割スロットの「開始時刻」の文字列を事前に自動生成（11:00, 11:15, ... 20:00）
+        /* 各スロットの開始時刻文字列を事前に自動生成（["11:00", "11:15", ..., "20:00"]） */
         const SLOT_TIMES = [];
-        {
-            let currentMinTotal = 11 * 60; // 11:00を分換算
-            for (let i = 0; i < TOTAL_SLOTS; i++) {
-                let h = Math.floor(currentMinTotal / 60);
-                let m = currentMinTotal % 60;
-                let timeStr = String(h).padStart(2, '0') + ":" + String(m).padStart(2, '0');
-                SLOT_TIMES.push(timeStr);
-                currentMinTotal += SLOT_INTERVAL_MIN;
-            }
+        let currentMinTotal = 11 * 60; // 11:00を分換算（660分）からスタート
+        for (let i = 0; i < TOTAL_SLOTS; i++) {
+            let h = Math.floor(currentMinTotal / 60);
+            let m = currentMinTotal % 60;
+            let timeStr = String(h).padStart(2, '0') + ":" + String(m).padStart(2, '0');
+            SLOT_TIMES.push(timeStr);
+            currentMinTotal += SLOT_INTERVAL_MIN;
         }
 
-        // --- 2. データの初期化・ストレージ連携ロジック ---
-
+        // ==========================================================================
+        // 2. データの初期化・ストレージ連携ロジック
+        // ==========================================================================
+        /* アプリ起動時のデータ読み込み処理 */
         function initData() {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
@@ -714,17 +681,19 @@
                     allOrders = data.allOrders || [];
                     testVirtualTime = data.testVirtualTime || "11:00";
 
+                    // キャパ配列の要素数が足りない場合は、初期値10で補填
                     while (hourlyCapacities.length < TOTAL_SLOTS) {
                         hourlyCapacities.push(10);
                     }
                     return;
                 } catch (e) {
-                    console.error("ストレージ読込エラー。初期化します。", e);
+                    console.error("ストレージ読込エラーが発生したため、初期化します。", e);
                 }
             }
             resetToDefault();
         }
 
+        /* アプリケーション状態の完全初期化（デフォルト値の割り当て） */
         function resetToDefault() {
             nextOrderNumber = 1;
             nextGroupId = 1;
@@ -732,11 +701,12 @@
             testVirtualTime = "11:00";
             hourlyCapacities = [];
             for (let i = 0; i < TOTAL_SLOTS; i++) {
-                hourlyCapacities.push(10);
+                hourlyCapacities.push(10); // すべての時間帯の初期生産能力を「10舟」に設定
             }
             allOrders = [];
         }
 
+        /* 現在の状態をローカルストレージへ即時保存 */
         function saveToStorage() {
             const data = {
                 nextOrderNumber,
@@ -749,60 +719,65 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        // --- 3. 時刻計算・環境制御に関連するヘルパー関数 ---
-
+        // ==========================================================================
+        // 3. 時刻計算・環境制御に関連するヘルパー関数
+        // ==========================================================================
+        /* 稼動作モードに応じた、現在の「基準時刻（文字列）」を取得 */
         function getCurrentTimeStr() {
             if (envMode === 'test') {
-                return testVirtualTime;
+                return testVirtualTime; // テストモードならセレクトボックスの仮想時間を返す
             }
-            const now = new Date();
+            const now = new Date();    // 本番モードならPCの実時刻を返す
             return String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
         }
 
+        /* 時刻文字列（"hh:mm"）を、対応するスケジュール表の行インデックス（0〜36）に変換 */
         function getSlotIndexByTime(timeStr) {
             if (!timeStr) return 0;
             const [h, m] = timeStr.split(':').map(Number);
             const totalMin = h * 60 + m;
-            const startMin = 11 * 60;
-            const endMin = 20 * 60;
+            const startMin = 11 * 60; // 営業開始 11:00
+            const endMin = 20 * 60;   // 営業終了 20:00
 
             if (totalMin < startMin) return 0;
-            if (totalMin >= endMin) return TOTAL_SLOTS - 1;
+            if (totalMin >= endMin) return TOTAL_SLOTS - 1; // 20:00以降は最終コマに割り当て
 
             const diff = totalMin - startMin;
             let idx = Math.floor(diff / SLOT_INTERVAL_MIN);
-
             if (idx < 0) idx = 0;
             if (idx >= TOTAL_SLOTS) idx = TOTAL_SLOTS - 1;
             return idx;
         }
 
+        /* 現在の基準時刻に対応するスロットのインデックスを取得 */
         function getCurrentSlotIndex() {
             return getSlotIndexByTime(getCurrentTimeStr());
         }
 
-        // --- 4. 画面レンダリング（描画）＆一括連動前詰めアサイン ---
-
+        // ==========================================================================
+        // 4. 画面レンダリング（描画） & 一括連動前詰めアサインエンジン
+        // ==========================================================================
         function renderTable() {
             const currentSlot = getCurrentSlotIndex();
-            let remainingCapacity = [...hourlyCapacities];
-            let displaySlots = [];
+            let remainingCapacity = [...hourlyCapacities]; // 描画処理用の残キャパ作業配列
+            let displaySlots = [];                         // 各行に描画する注文オブジェクトの2次元配列
             for (let i = 0; i < TOTAL_SLOTS; i++) {
                 displaySlots.push([]);
             }
 
-            // --- 【ステップA: 提供完了注文の固定配置】 ---
+            // --- 【ステップA：提供完了（served）注文の固定配置】 ---
+            // 提供済みの注文は、営業中に変動しない確定枠として最優先で固定配置され、キャパを消費します
             allOrders.forEach(order => {
                 if (order.status === 'served') {
                     let h = order.assignedHour;
                     if (h < 0 || h >= TOTAL_SLOTS) h = TOTAL_SLOTS - 1;
-
                     displaySlots[h].push(order);
-                    remainingCapacity[h] -= order.quantity;
+                    remainingCapacity[h] -= order.quantity; // 残り受付可能数を減算
                 }
             });
 
-            // --- 【ステップB: 未提供注文の動的・一括連動前詰め自動配置】 ---
+            // --- 【ステップB：未提供（active）注文の動的・一括連動前詰め自動配置】 ---
+            // 未提供の注文は、注文ID順にソートされ、現在の時刻を起点として「ToBe仕様」に基づき動的に最適な時間枠へ再アサインされます
             let sortedActives = allOrders.filter(o => o.status === 'active').sort((a, b) => a.id - b.id);
             let processedIds = new Set();
 
@@ -810,50 +785,49 @@
                 let order = sortedActives[i];
                 if (processedIds.has(order.id)) continue;
 
-                // 同一グループを特定
+                // 同一の注文（一括自動分割されたグループ）を特定し、合計数量を算出
                 let group = sortedActives.filter(o => o.groupUniqueId === order.groupUniqueId);
                 group.forEach(g => processedIds.add(g.id));
-
-                // グループ全体の合計数量を計算
                 const groupTotalQty = group.reduce((sum, g) => sum + g.quantity, 0);
 
-                // ご提案アルゴリズム（ToBe仕様）に100%基づいた、描画エンジン側の一括配置探索
                 let finalStartSlot = currentSlot;
                 let foundStartSlot = false;
 
+                // 現在時刻（またはそれ以降）から順に、このグループを配置できる最初の位置を探索
                 for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
-                    const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+                    // 探索中の枠において、既に固定されている「提供完了分」の合計数量を算出
+                    const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s)
+                        .reduce((sum, o) => sum + o.quantity, 0);
                     const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
-
                     if (slotRemainingCap <= 0) continue;
 
-                    // ① 受注（グループ総数）を丸ごと入れられる枠が見つかるまで枠を移動
+                    // 条件①：一括注文（グループ総数）を分断せず、丸ごと収められる十分な残枠が見つかった場合
                     if (groupTotalQty <= slotRemainingCap) {
                         finalStartSlot = s;
                         foundStartSlot = true;
                         break;
                     }
 
-                    // ② 空っぽの枠に行き着いて、かつ受注が分割なしで入れられない場合
+                    // 条件②：塊で入らないが、空っぽ（未提供カードが0）かつ隣り合う連続した空き枠群で綺麗に収まる場合
                     if (currentOrdersSum === 0) {
                         let tempRemaining = groupTotalQty;
                         let isContinuousPossible = true;
 
                         for (let checkSlot = s; checkSlot < TOTAL_SLOTS && tempRemaining > 0; checkSlot++) {
-                            const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
+                            const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot)
+                                .reduce((sum, o) => sum + o.quantity, 0);
                             const testRemainingCap = Math.max(0, hourlyCapacities[checkSlot] - testOrdersSum);
 
-                            // 連続テスト。途中で満杯の枠がある、または空枠でない場合は不合格
+                            // 途中で提供済みの壁がある、または空枠でない場合は不合格
                             if (testRemainingCap <= 0 || (checkSlot > s && testOrdersSum > 0)) {
                                 isContinuousPossible = false;
                                 break;
                             }
-
                             let take = Math.min(tempRemaining, testRemainingCap);
                             tempRemaining -= take;
                         }
 
-                        // 隣り合う連続枠ですべて綺麗に収まることが確定したら、ここを開始位置にする
+                        // 分割なし連続配置で本日中にすべて収まりきることが確定した場合、ここを開始位置に決定
                         if (isContinuousPossible && tempRemaining === 0) {
                             finalStartSlot = s;
                             foundStartSlot = true;
@@ -862,7 +836,7 @@
                     }
                 }
 
-                // 万が一、上記の理想条件に合う枠が本日中になかった場合の最終セーフガード（データの消失を完全防止）
+                // セーフガード：万が一、本日中に理想の枠が1つも見つからなかった場合、データ消失を防ぐため現在の空き枠に強制配置
                 if (!foundStartSlot) {
                     for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
                         if (remainingCapacity[s] > 0) {
@@ -872,37 +846,38 @@
                     }
                 }
 
-                // 決定した連続枠から順番に、グループ内の小分けカードを一切飛び飛びにせず順番にアサイン
+                // 決定した時間枠から順番に、グループ内の小分けカードを飛び飛びにせず順番に割り当て（アサイン）
                 let runningStartSlot = finalStartSlot;
                 for (let gIdx = 0; gIdx < group.length; gIdx++) {
                     let gOrder = group[gIdx];
-
-                    // 隙間に入り切らない場合は自動で次のスロット（お隣）へ引き継ぐ
                     while (runningStartSlot < TOTAL_SLOTS) {
+                        // 残りキャパが足りる、または最終時間枠（あふれ受け枠）であればカードを挿入
                         if (remainingCapacity[runningStartSlot] >= gOrder.quantity || runningStartSlot === TOTAL_SLOTS - 1) {
                             gOrder.assignedHour = runningStartSlot;
                             displaySlots[runningStartSlot].push(gOrder);
                             remainingCapacity[runningStartSlot] -= gOrder.quantity;
                             break;
                         }
-                        runningStartSlot++;
+                        runningStartSlot++; // 隙間に入り切らない場合は自動で次のスロット（お隣）へ引き継ぐ
                     }
                 }
             }
 
-            // --- 【ステップC: HTMLテーブルの出力】 ---
+            // --- 【ステップC：HTMLテーブルの生成出力と統計の同期】 ---
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = "";
 
             for (let i = 0; i < TOTAL_SLOTS; i++) {
                 const tr = document.createElement('tr');
-                if (i === currentSlot) tr.className = "current-row";
+                if (i === currentSlot) tr.className = "current-row"; // 現在時刻の行をハイライト
 
+                // 時刻セル
                 const tdTime = document.createElement('td');
                 tdTime.className = "time-col";
                 tdTime.innerText = SLOT_TIMES[i];
                 tr.appendChild(tdTime);
 
+                // 生産キャパ制御セル（入力フォーム・確定ボタン・残り受付可能数の表示）
                 const tdCap = document.createElement('td');
                 tdCap.className = "capacity-col";
 
@@ -923,15 +898,15 @@
                 const availDiv = document.createElement('div');
                 availDiv.className = "avail-capacity-display";
                 const availQty = remainingCapacity[i];
-
                 if (availQty <= 0) {
-                    availDiv.innerHTML = '<span class="status-full">満</span>';
+                    availDiv.innerHTML = '<span class="status-full">満</span>'; // 枠が埋まったら「満」表示
                 } else {
                     availDiv.innerHTML = `受付可: <strong>${availQty}</strong> 舟`;
                 }
                 tdCap.appendChild(availDiv);
                 tr.appendChild(tdCap);
 
+                // 注文カード配置セル（該当枠に割り当てられた注文の一覧表示）
                 const tdOrders = document.createElement('td');
                 const ul = document.createElement('ul');
                 ul.className = "order-list";
@@ -945,17 +920,15 @@
                     if (order.memo) {
                         cardHtml += `<div class="order-memo">${escapeHtml(order.memo)}</div>`;
                     }
-                    cardHtml += `</div>`;
+                    cardHtml += `</div><div class="order-actions">`;
 
-                    cardHtml += `<div class="order-actions">`;
                     if (order.status === 'active') {
-                        cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#4caf50; color:white; border:none;">提供済</button>`;
+                        cardHtml += `<button onclick="toggleServed(${order.id})" style="background: #4caf50; color: white; border:none;">提供済</button>`;
                         cardHtml += `<button onclick="openEditModal(${order.id})" style="background:#ff9800; color:white; border:none;">変更</button>`;
                     } else {
                         cardHtml += `<button onclick="toggleServed(${order.id})" style="background:#ffeb3b; color:#333; border:none;">未済へ</button>`;
                     }
-                    cardHtml += `<button class="delete-btn" onclick="deleteOrder(${order.id})">削除</button>`;
-                    cardHtml += `</div>`;
+                    cardHtml += `<button class="delete-btn" onclick="deleteOrder(${order.id})">削除</button></div>`;
 
                     li.innerHTML = cardHtml;
                     ul.appendChild(li);
@@ -966,6 +939,7 @@
                 tbody.appendChild(tr);
             }
 
+            // 画面最上部カウンター（売上リアルタイム集計ボックス）の統計数値を更新
             const totalCap = hourlyCapacities.reduce((sum, v) => sum + v, 0);
             const totalOrdersSum = allOrders.reduce((sum, o) => sum + o.quantity, 0);
             const servedOrdersSum = allOrders.filter(o => o.status === 'served').reduce((sum, o) => sum + o.quantity, 0);
@@ -979,10 +953,12 @@
             updateTimeDisplay();
         }
 
-        // --- 5. 受注（新規・一括自動分割）に関するイベントハンドラー ---
-
+        // ==========================================================================
+        // 5. 受注（新規登録・一括自動分割）に関するイベントハンドラー
+        // ==========================================================================
+        /* 新規受注ダイアログを開く */
         function openOrderModal() {
-            editId = "";
+            editId = ""; // 編集IDを空に初期化して新規作成モードであることを明示
             document.getElementById('modal-title').innerText = "新規受注入力";
             document.getElementById('order-qty').value = "";
             document.getElementById('order-memo').value = "";
@@ -990,11 +966,11 @@
             document.getElementById('order-qty').focus();
         }
 
+        /* 既存注文の変更ダイアログを開く */
         function openEditModal(id) {
             const order = allOrders.find(o => o.id === id);
             if (!order) return;
-
-            editId = id;
+            editId = id; // 編集対象のIDをセット
             document.getElementById('modal-title').innerText = `注文内容の変更 (#${String(id).padStart(3, '0')})`;
             document.getElementById('order-qty').value = order.quantity;
             document.getElementById('order-memo').value = order.memo;
@@ -1002,14 +978,17 @@
             document.getElementById('order-qty').focus();
         }
 
+        /* 受注モーダルを閉じる */
         function closeOrderModal() {
             document.getElementById('modal-overlay').style.display = "none";
         }
 
+        /* モーダル内の「OK」ボタン押下時の登録・変更確定メイン処理 */
         function submitOrderModal() {
             const qtyInputEl = document.getElementById('order-qty');
             const memoInputEl = document.getElementById('order-memo');
 
+            // 入力された数量をトリミングし、全角数字だった場合は半角数字に全自動変換（シニアの入力ミス防止）
             let qtyRaw = qtyInputEl.value.trim();
             qtyRaw = qtyRaw.replace(/[０-９]/g, function (s) {
                 return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
@@ -1021,102 +1000,96 @@
                 qtyInputEl.focus();
                 return;
             }
-
             const memo = memoInputEl.value.trim();
 
             if (editId === "") {
-                // ==========================================
-                // 【新規受注ルート】塊キープ＆完全隣接最小分割アサイン（グループID復旧版）
-                // ==========================================
-                let remainingQty = qty; // 配置を処理していない残りの注文数
-                let currentSlot = getCurrentSlotIndex(); // 受付時点の時間枠
-                let finalStartSlot = -1; // 最終的にアサインを確定させる開始枠
-                let isDividedMode = false; // 分割処理を行うかどうかの内部フラグ
+                // --- 【新規受注ルート】塊キープ＆完全隣接最小分割アサイン ---
+                let remainingQty = qty;             // 未配置の残り受注数
+                let currentSlot = getCurrentSlotIndex(); // 受付を行った現在の起点枠
+                let finalStartSlot = -1;            // 最終アサイン確定の探索開始枠
+                let isDividedMode = false;          // 複数枠に分割配置する必要があるかの判定フラグ
+                const thisGroupUniqueId = nextGroupId++; // この一括受付を識別する一意のグループIDを発番
 
-                // 【修正・復旧】：消えてしまっていた一括受注グループIDの発番定義をここに正しく追加します
-                const thisGroupUniqueId = nextGroupId++;
-
-                // --- 【ステップ1：条件に合致する枠を探索】 ---
+                // 【ステップ1：条件に合致するアサイン先時間枠の探索】
                 for (let s = currentSlot; s < TOTAL_SLOTS; s++) {
-                    const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+                    const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s)
+                        .reduce((sum, o) => sum + o.quantity, 0);
                     const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
-
                     if (slotRemainingCap <= 0) continue;
 
-                    // 受注を丸ごと入れられる枠が見つかるまで枠を移動
+                    // パターンA：1つの時間枠（塊）に分断させずにすべて収まる場合
                     if (remainingQty <= slotRemainingCap) {
                         finalStartSlot = s;
                         isDividedMode = false;
                         break;
                     }
 
-                    // 空っぽの枠に行き着いて、かつ受注が分割なしで入れられないなら
+                    // パターンB：現在の枠が真っ空であり、かつそのお隣(連続する時間帯)を含めて綺麗に分割吸収できるか判定
                     if (currentOrdersSum === 0) {
                         let tempRemaining = remainingQty;
                         let isContinuousPossible = true;
 
                         for (let checkSlot = s; checkSlot < TOTAL_SLOTS && tempRemaining > 0; checkSlot++) {
-                            const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot).reduce((sum, o) => sum + o.quantity, 0);
+                            const testOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === checkSlot)
+                                .reduce((sum, o) => sum + o.quantity, 0);
                             const testRemainingCap = Math.max(0, hourlyCapacities[checkSlot] - testOrdersSum);
 
                             if (testRemainingCap <= 0 || (checkSlot > s && testOrdersSum > 0)) {
                                 isContinuousPossible = false;
-                                break;
+                                break; // 途中に提供済みの壁があるため不合格
                             }
                             let take = Math.min(tempRemaining, testRemainingCap);
                             tempRemaining -= take;
                         }
 
-                        // 最初の空枠から連続して分割して収まるなら合格
                         if (isContinuousPossible && tempRemaining === 0) {
                             finalStartSlot = s;
-                            isDividedMode = true;
+                            isDividedMode = true; // 分割が必要だが、最も綺麗なお隣連続枠として認定
                             break;
                         }
                     }
                 }
 
-                // --- 【ステップ2：正式アサイン処理＆メモ欄への分割元番号の自動付与】 ---
+                // 【ステップ2：正式アサイン処理 & メモ欄への「分割元番号」の自動付与】
                 if (finalStartSlot !== -1) {
-                    // この一括受注で一番最初に発番される注文番号（＝分割元の親番号）を事前に割り出します
-                    const parentOrderNumberFormatted = String(nextOrderNumber).padStart(3, '0');
+                    const parentOrderNumberFormatted = String(nextOrderNumber).padStart(3, '0'); // 分割元の親番号
 
                     for (let s = finalStartSlot; s < TOTAL_SLOTS && remainingQty > 0; s++) {
-                        const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s).reduce((sum, o) => sum + o.quantity, 0);
+                        const currentOrdersSum = allOrders.filter(o => o.status === 'served' && o.assignedHour === s)
+                            .reduce((sum, o) => sum + o.quantity, 0);
                         const slotRemainingCap = Math.max(0, hourlyCapacities[s] - currentOrdersSum);
-
                         if (slotRemainingCap <= 0) continue;
 
+                        // 分割モードなら枠いっぱいに詰め、通常モードなら受注数そのものを設定
                         let takeQty = !isDividedMode ? remainingQty : Math.min(remainingQty, slotRemainingCap);
 
-                        // メモ欄の文字列を構築
                         let finalMemo = memo;
                         if (isDividedMode) {
-                            // 分割が発生した場合、すべてのカード（先頭のカードも含めて）に「分割元：#XXX」を付与します
-                            const suffix = `分割元：#${parentOrderNumberFormatted}`;
+                            // 分割が発生した場合、すべての分割カードに親番号（例：分割元:#001）を強制付与して追跡可能にする
+                            const suffix = `分割元:#${parentOrderNumberFormatted}`;
                             finalMemo = finalMemo === "" ? suffix : finalMemo + " " + suffix;
                         }
 
                         allOrders.push({
                             id: nextOrderNumber++,
-                            groupUniqueId: thisGroupUniqueId, // 識別キーがこれで正しく注入されます
+                            groupUniqueId: thisGroupUniqueId,
                             quantity: takeQty,
                             memo: finalMemo,
                             status: 'active',
                             assignedHour: s
                         });
-
                         remainingQty -= takeQty;
                     }
                 }
-                // 最後の枠まで入れられなかったらエラーを出す
+
+                // 【エラー判定】：本日中の全キャパシティを使い切ってもあふれる超大口注文（限界突破）への防御策
                 if (remainingQty > 0 || finalStartSlot === -1) {
-                    alert(`【生産上限エラー】受注を分断させずにまとめて焼ける、連続した「空き時間枠」が本日中に確保できません。\n各時間枠の生産可能数を増やすか、既存の注文を整理してください。`);
+                    alert(`【生産上限エラー】 受注を分断させずにまとめて焼ける、連続した「空き時間枠」が本日中に確保できません。\n各時間枠の生産可能数を増やすか、既存の注文を整理してください。`);
+                    return; // 登録を中断し、入力モーダルを開いたままにしてデータを保護
                 }
 
             } else {
-
-
+                // --- 【既存編集ルート】 ---
                 const order = allOrders.find(o => o.id === parseInt(editId, 10));
                 if (order) {
                     order.quantity = qty;
@@ -1129,8 +1102,10 @@
             renderTable();
         }
 
-        // --- 6. ステータス操作（提供完了・削除・キャパ変更）に関するハンドラー ---
-
+        // ==========================================================================
+        // 6. ステータス操作（提供完了・削除・キャパ変更）に関するハンドラー
+        // ==========================================================================
+        /* 注文カードの提供ステータスを「提供済」⇔「未済」に交互に切り替える処理 */
         function toggleServed(orderId) {
             const order = allOrders.find(o => o.id === orderId);
             if (!order) return;
@@ -1141,18 +1116,19 @@
 
             if (order.status === 'active') {
                 nextStatus = 'served';
-                confirmMessage = `注文 #${formattedId} （${order.quantity}舟） を「提供済」にしてもよろしいですか？`;
+                confirmMessage = `注文 #${formattedId} (${order.quantity}舟) を 「提供済」にしてもよろしいですか?`;
             } else {
                 nextStatus = 'active';
-                confirmMessage = `注文 #${formattedId} を「未済（未提供）」に戻してもよろしいですか？`;
+                confirmMessage = `注文 #${formattedId} を 「未済 (未提供)」に戻してもよろしいですか?`;
             }
 
-            if (!confirm(confirmMessage)) return;
+            if (!confirm(confirmMessage)) return; // キャンセルされたら中断
 
+            // 特殊仕様ガード：最終時間枠（20:00）でキャパシティを超えてあふれている未提供カードへのロック制御
             const lastSlotIdx = TOTAL_SLOTS - 1;
-
             if (nextStatus === 'served' && order.assignedHour === lastSlotIdx) {
-                const fixedSum20 = allOrders.filter(o => o.status === 'served' && o.assignedHour === lastSlotIdx).reduce((sum, o) => sum + o.quantity, 0);
+                const fixedSum20 = allOrders.filter(o => o.status === 'served' && o.assignedHour === lastSlotIdx)
+                    .reduce((sum, o) => sum + o.quantity, 0);
                 const remaining20 = hourlyCapacities[lastSlotIdx] - fixedSum20;
 
                 if (order.quantity > remaining20) {
@@ -1166,35 +1142,39 @@
             renderTable();
         }
 
+        /* 注文カードを完全に削除する処理 */
         function deleteOrder(id) {
             const order = allOrders.find(o => o.id === id);
             if (!order) return;
-
             const formattedId = String(id).padStart(3, '0');
-            if (confirm(`注文 #${formattedId} （${order.quantity}舟） を削除してもよろしいですか？`)) {
+
+            if (confirm(`注文 #${formattedId} (${order.quantity}舟) を削除してもよろしいですか?`)) {
                 allOrders = allOrders.filter(o => o.id !== id);
                 saveToStorage();
                 renderTable();
             }
         }
 
+        /* 特定のコマ（時間枠）の生産上限能力（キャパ）を書き換える処理 */
         function updateCapacity(index) {
             const inputEl = document.getElementById(`cap-input-${index}`);
             const val = parseInt(inputEl.value, 10);
 
             if (isNaN(val) || val < 0) {
                 alert("生産可能数には0以上の数値を入力してください。");
-                inputEl.value = hourlyCapacities[index];
+                inputEl.value = hourlyCapacities[index]; // 違反入力があった場合は元のキャパ数値を再セット
                 return;
             }
 
             hourlyCapacities[index] = val;
             saveToStorage();
-            renderTable();
+            renderTable(); // キャパ変更に伴う、未提供カードの一括自動リライト（前詰め）描画を実行
         }
 
-        // --- 7. 環境制御・タイマー・リセットロジック ---
-
+        // ==========================================================================
+        // 7. 環境制御・タイマー・全リセットロジック
+        // ==========================================================================
+        /* 画面下部の環境時刻インジケーター表示の更新 */
         function updateTimeDisplay() {
             const timeStr = getCurrentTimeStr();
             const timeEl = document.getElementById('current-time-text');
@@ -1205,22 +1185,21 @@
             }
         }
 
+        /* 本番モード ⇔ テストモード の動作切替処理 */
         function changeEnvMode(mode) {
             envMode = mode;
             if (mode === 'production') {
                 document.getElementById('test-time-control').style.display = "none";
             } else {
                 document.getElementById('test-time-control').style.display = "flex";
-
-                // 仮想時刻ドロップダウンの値を内部変数に強制同期
                 const selectEl = document.getElementById('virtual-time-select');
-                testVirtualTime = selectEl.value;
-                selectEl.value = testVirtualTime;
+                testVirtualTime = selectEl.value; // 仮想ドロップダウンの初期値を内部変数に強制同期
             }
             saveToStorage();
             renderTable();
         }
 
+        /* テストモード時の仮想時間変更時のハンドラー */
         function updateVirtualTime(val) {
             testVirtualTime = val;
             saveToStorage();
@@ -1228,8 +1207,9 @@
             renderTable();
         }
 
+        /* 全データを完全に消去し、デフォルトの本番環境状態へ復旧 */
         function clearAllData() {
-            if (confirm("⚠️ すべてのデータが初期化されます。よろしいですか？")) {
+            if (confirm("⚠️ すべてのデータが初期化されます。よろしいですか?")) {
                 resetToDefault();
                 saveToStorage();
                 document.getElementById('env-production').checked = true;
@@ -1239,10 +1219,12 @@
             }
         }
 
+        /* 取扱説明書（マニュアル）ファイルを別ウィンドウで表示 */
         function openManual() {
             window.open('manual.html', '_blank');
         }
 
+        /* 安全な描画のためのHTMLエスケープ処理（XSS脆弱性排除） */
         function escapeHtml(str) {
             if (!str) return "";
             return str
@@ -1253,8 +1235,13 @@
                 .replace(/'/g, "&#039;");
         }
 
+        // ==========================================================================
+        // 8. ページ初期ロード完了時のエントリーポイント
+        // ==========================================================================
         window.addEventListener('DOMContentLoaded', () => {
-            initData();
+            initData(); // ストレージからデータを復旧
+
+            // UI上のモード選択ラジオボタンの初期チェック状態を完全に同期
             if (envMode === 'production') {
                 document.getElementById('env-production').checked = true;
                 document.getElementById('test-time-control').style.display = "none";
@@ -1266,6 +1253,7 @@
 
             renderTable();
 
+            // 本番実環境での運用中、時間が経つにつれて「現在行」のハイライトが自動追従するよう30秒毎にタイマー監視
             setInterval(() => {
                 if (envMode === 'production') {
                     renderTable();
